@@ -1,2 +1,14 @@
-# prediksi-togel-jitu-4d
-fitur terbaru untuk prediksi togel jitu 4d - prediksi togel hari ini lengkap dan 99 akurat
+# Prediksi Togel Jitu 4D
+
+🔧 Tools analisis berbasis pola & feeling — **untuk keperluan edukasi saja**.
+
+⚠️ **Disclaimer**  
+- Bukan bocoran, bukan jaminan menang  
+- Hasil bersifat simulasi & hiburan  
+- Gunakan secara bijak & bertanggung jawab  
+
+🌐 **Live Demo**:  
+https://prediksi-togel-jitu-4d.vercel.app
+
+📦 Teknologi: HTML, CSS, JavaScript (client-side only)  
+🔐 Tidak mengumpulkan data pengguna  
