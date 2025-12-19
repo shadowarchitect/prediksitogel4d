@@ -1340,21 +1340,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================
-     MAIN GENERATION FUNCTION
-  ====================== */
-  function generateBBFSAndResults() {
-    // 1. Generate BBFS 7D
+   MAIN GENERATION FUNCTION - SIMPLIFIED
+====================== */
+function generateBBFSAndResults() {
+    // Generate data
     userData.bbfs = generateBBFS7D(userData.feeling);
-    
-    // 2. Generate BBFS Ladder
     userData.ladder = generateBBFSLadder(userData.bbfs);
-    
-    // 3. Generate Results (4D/3D/2D/Colok) - UPDATED 8 RESULTS
     userData.results = generateResults(userData.bbfs);
     
-    // 4. Run processing
+    // Directly run processing
     runProcessing();
-  }
+}
+
+// Update btnSkipHistory:
+qs('#btnSkipHistory').onclick = () => {
+    userData.history = [];
+    generateBBFSAndResults();  // Ini akan panggil runProcessing()
+};
+
+// Update btnHistoryNext:
+qs('#btnHistoryNext').onclick = () => {
+    const history = [...qsa('.history')].map(i => i.value.trim());
+    const filledHistory = history.filter(h => h.length > 0);
+    
+    if (filledHistory.length > 0) {
+        if (filledHistory.some(h => h.length !== 4 || !onlyDigits(h))) {
+            alert('History harus 4 digit angka');
+            return;
+        }
+
+        const uniqueHistory = [...new Set(filledHistory)];
+        if (uniqueHistory.length !== filledHistory.length) {
+            alert('History tidak boleh ada angka yang sama');
+            return;
+        }
+
+        if (filledHistory.includes(userData.feeling)) {
+            alert('History tidak boleh sama dengan feeling');
+            return;
+        }
+    }
+    
+    userData.history = filledHistory;
+    generateBBFSAndResults();  // Ini akan panggil runProcessing()
+};
 
   /* =====================
      RESULT ENGINE (UPDATED 8 RESULTS)
@@ -1700,3 +1729,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
