@@ -1164,42 +1164,64 @@ body {
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+// SIMPLE DEBUG - Check if page loads
+console.log("Page loading...");
 
+// Wait for DOM to be fully loaded
+window.addEventListener('DOMContentLoaded', function() {
+  console.log("DOM fully loaded");
+  
   /* =====================
-     SHORTCUT
+     SIMPLE SHORTCUT FUNCTIONS
   ====================== */
-  const qs  = s => document.querySelector(s);
-  const qsa = s => document.querySelectorAll(s);
-
+  function qs(selector) {
+    return document.querySelector(selector);
+  }
+  
+  function qsa(selector) {
+    return document.querySelectorAll(selector);
+  }
+  
+  function showPage(pageId) {
+    console.log("Showing page:", pageId);
+    // Hide all sections
+    const allSections = qsa('.section');
+    allSections.forEach(section => {
+      section.classList.add('hidden');
+    });
+    
+    // Show target section
+    const targetSection = qs('#' + pageId);
+    if (targetSection) {
+      targetSection.classList.remove('hidden');
+      window.scrollTo(0, 0);
+    } else {
+      console.error("Page not found:", pageId);
+    }
+  }
+  
   /* =====================
-     PAGE NAV
+     SIMPLE UTILITY FUNCTIONS
   ====================== */
-  const sections = qsa('.section');
-  const showPage = id => {
-    sections.forEach(p => p.classList.add('hidden'));
-    const el = qs('#' + id);
-    if (el) el.classList.remove('hidden');
-    window.scrollTo(0, 0);
-  };
-
-  /* =====================
-     UTIL
-  ====================== */
-  const onlyDigits = s => /^[0-9]+$/.test(s);
-  const randDigit = () => Math.floor(Math.random() * 10).toString();
-
-  const shuffle = arr => {
+  function onlyDigits(str) {
+    return /^[0-9]+$/.test(str);
+  }
+  
+  function randDigit() {
+    return Math.floor(Math.random() * 10).toString();
+  }
+  
+  function shuffle(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
-  };
-
+  }
+  
   /* =====================
-     STATE
+     USER DATA STORAGE
   ====================== */
   const userData = {
     feeling: '',
@@ -1208,119 +1230,230 @@ document.addEventListener('DOMContentLoaded', () => {
     ladder: {},
     results: {}
   };
-
-  /* =====================
-     BUTTON FLOW - SIMPLE FIX
-  ====================== */
-  qs('#btnStartIntro').onclick = () => showPage('page-country');
-  qs('#btnMulai').onclick = () => showPage('page-input');
-  qs('#btnBack').onclick = () => showPage('page-country');
-
-  qs('#btnNextFeeling').onclick = () => {
-    const v = qs('#feelingInput').value.trim();
-    if (v.length !== 4 || !onlyDigits(v)) {
-      alert('Isi 4 angka');
-      return;
-    }
-    userData.feeling = v;
-    showPage('page-history-choice');
-  };
-
-  qs('#btnWithHistory').onclick = () => showPage('page-history');
   
-  qs('#btnSkipHistory').onclick = () => {
-    userData.history = [];
+  /* =====================
+     SETUP ALL BUTTON EVENT LISTENERS
+  ====================== */
+  function setupAllButtons() {
+    console.log("Setting up buttons...");
     
-    // Generate data
-    userData.bbfs = generateBBFS7D(userData.feeling);
-    userData.ladder = generateBBFSLadder(userData.bbfs);
-    userData.results = generateResults(userData.bbfs);
-    
-    // Go to processing page
-    showPage('page-processing');
-    
-    // Start animation after short delay
-    setTimeout(() => {
-      runProcessingAnimation();
-    }, 50);
-  };
-
-  qs('#btnFeeling').onclick = () => {
-    qs('#btnFeeling').classList.add('active');
-    qs('#btnBocoran').classList.remove('active');
-    showPage('page-history-choice');
-  };
-
-  qs('#btnBocoran').onclick = () => {
-    qs('#btnBocoran').classList.add('active');
-    qs('#btnFeeling').classList.remove('active');
-    showPage('page-education');
-  };
-
-  qs('#btnEduNext').onclick = () => {
-    qs('#feelingInput').value = '';
-    showPage('page-input');
-  };
-
-  qs('#btnHistoryNext').onclick = () => {
-    const history = [...qsa('.history')].map(i => i.value.trim());
-    const filledHistory = history.filter(h => h.length > 0);
-    
-    // Jika ada history yang diisi, validasi
-    if (filledHistory.length > 0) {
-      if (filledHistory.some(h => h.length !== 4 || !onlyDigits(h))) {
-        alert('History harus 4 digit angka');
-        return;
-      }
-
-      const uniqueHistory = [...new Set(filledHistory)];
-      if (uniqueHistory.length !== filledHistory.length) {
-        alert('History tidak boleh ada angka yang sama');
-        return;
-      }
-
-      if (filledHistory.includes(userData.feeling)) {
-        alert('History tidak boleh sama dengan feeling');
-        return;
-      }
+    // Start button
+    const startBtn = qs('#btnStartIntro');
+    if (startBtn) {
+      startBtn.onclick = function() {
+        console.log("Start button clicked");
+        showPage('page-country');
+      };
     }
     
-    userData.history = filledHistory;
+    // Mulai Analisis button
+    const mulaiBtn = qs('#btnMulai');
+    if (mulaiBtn) {
+      mulaiBtn.onclick = function() {
+        console.log("Mulai button clicked");
+        userData.feeling = '';
+        userData.history = [];
+        userData.bbfs = '';
+        userData.ladder = {};
+        userData.results = {};
+        showPage('page-input');
+      };
+    }
     
-    // Generate data
-    userData.bbfs = generateBBFS7D(userData.feeling);
-    userData.ladder = generateBBFSLadder(userData.bbfs);
-    userData.results = generateResults(userData.bbfs);
+    // Back button
+    const backBtn = qs('#btnBack');
+    if (backBtn) {
+      backBtn.onclick = function() {
+        console.log("Back button clicked");
+        showPage('page-country');
+      };
+    }
     
-    // Go to processing page
-    showPage('page-processing');
+    // Next Feeling button
+    const nextFeelingBtn = qs('#btnNextFeeling');
+    if (nextFeelingBtn) {
+      nextFeelingBtn.onclick = function() {
+        const feelingInput = qs('#feelingInput');
+        if (!feelingInput) {
+          alert("Input field not found!");
+          return;
+        }
+        
+        const value = feelingInput.value.trim();
+        console.log("Feeling input:", value);
+        
+        if (value.length !== 4 || !onlyDigits(value)) {
+          alert('Isi 4 angka');
+          return;
+        }
+        
+        userData.feeling = value;
+        console.log("Feeling saved:", userData.feeling);
+        showPage('page-history-choice');
+      };
+    }
     
-    // Start animation after short delay
-    setTimeout(() => {
-      runProcessingAnimation();
-    }, 50);
-  };
+    // With History button
+    const withHistoryBtn = qs('#btnWithHistory');
+    if (withHistoryBtn) {
+      withHistoryBtn.onclick = function() {
+        console.log("With History clicked");
+        showPage('page-history');
+      };
+    }
+    
+    // Skip History button - SIMPLE VERSION
+    const skipHistoryBtn = qs('#btnSkipHistory');
+    if (skipHistoryBtn) {
+      skipHistoryBtn.onclick = function() {
+        console.log("Skip History clicked");
+        userData.history = [];
+        
+        // Generate BBFS
+        userData.bbfs = generateBBFS7D(userData.feeling);
+        console.log("Generated BBFS:", userData.bbfs);
+        
+        // Generate ladder
+        userData.ladder = generateBBFSLadder(userData.bbfs);
+        
+        // Generate results
+        userData.results = generateResults(userData.bbfs);
+        
+        // DIRECT navigation to result page (skip animation for now)
+        renderResult();
+        showPage('page-result');
+      };
+    }
+    
+    // Feeling choice button
+    const feelingBtn = qs('#btnFeeling');
+    if (feelingBtn) {
+      feelingBtn.onclick = function() {
+        console.log("Feeling choice clicked");
+        showPage('page-history-choice');
+      };
+    }
+    
+    // Bocoran button
+    const bocoranBtn = qs('#btnBocoran');
+    if (bocoranBtn) {
+      bocoranBtn.onclick = function() {
+        console.log("Bocoran clicked");
+        showPage('page-education');
+      };
+    }
+    
+    // Edu Next button
+    const eduNextBtn = qs('#btnEduNext');
+    if (eduNextBtn) {
+      eduNextBtn.onclick = function() {
+        console.log("Edu Next clicked");
+        const feelingInput = qs('#feelingInput');
+        if (feelingInput) feelingInput.value = '';
+        showPage('page-input');
+      };
+    }
+    
+    // History Next button - SIMPLE VERSION
+    const historyNextBtn = qs('#btnHistoryNext');
+    if (historyNextBtn) {
+      historyNextBtn.onclick = function() {
+        console.log("History Next clicked");
+        
+        const historyInputs = qsa('.history');
+        const filledHistory = [];
+        
+        historyInputs.forEach(input => {
+          const value = input.value.trim();
+          if (value.length > 0) {
+            filledHistory.push(value);
+          }
+        });
+        
+        console.log("History inputs found:", filledHistory);
+        
+        // Jika ada history yang diisi, validasi
+        if (filledHistory.length > 0) {
+          if (filledHistory.some(h => h.length !== 4 || !onlyDigits(h))) {
+            alert('History harus 4 digit angka');
+            return;
+          }
 
-  qs('#btnHome').onclick = () => showPage('page-intro');
-  qs('#btnDonate').onclick = () => showPage('page-donation');
-  qs('#btnBackHome').onclick = () => showPage('page-intro');
+          const uniqueHistory = [...new Set(filledHistory)];
+          if (uniqueHistory.length !== filledHistory.length) {
+            alert('History tidak boleh ada angka yang sama');
+            return;
+          }
 
+          if (filledHistory.includes(userData.feeling)) {
+            alert('History tidak boleh sama dengan feeling');
+            return;
+          }
+        }
+        
+        userData.history = filledHistory;
+        
+        // Generate BBFS
+        userData.bbfs = generateBBFS7D(userData.feeling);
+        console.log("Generated BBFS:", userData.bbfs);
+        
+        // Generate ladder
+        userData.ladder = generateBBFSLadder(userData.bbfs);
+        
+        // Generate results
+        userData.results = generateResults(userData.bbfs);
+        
+        // DIRECT navigation to result page
+        renderResult();
+        showPage('page-result');
+      };
+    }
+    
+    // Home button
+    const homeBtn = qs('#btnHome');
+    if (homeBtn) {
+      homeBtn.onclick = function() {
+        showPage('page-intro');
+      };
+    }
+    
+    // Donate button
+    const donateBtn = qs('#btnDonate');
+    if (donateBtn) {
+      donateBtn.onclick = function() {
+        showPage('page-donation');
+      };
+    }
+    
+    // Back Home button
+    const backHomeBtn = qs('#btnBackHome');
+    if (backHomeBtn) {
+      backHomeBtn.onclick = function() {
+        showPage('page-intro');
+      };
+    }
+    
+    console.log("All buttons setup complete");
+  }
+  
   /* =====================
-     BBFS 7D GENERATOR
+     GENERATOR FUNCTIONS
   ====================== */
   function generateBBFS7D(feeling) {
+    if (!feeling || feeling.length !== 4) {
+      console.error("Invalid feeling:", feeling);
+      feeling = "1234"; // Fallback
+    }
+    
     let digits = feeling.split('');
     
-    // Tambah 3 digit random
+    // Add 3 random digits
     for(let i = 0; i < 3; i++) {
       digits.push(randDigit());
     }
     
-    // Validasi: tidak ada digit muncul 3x
-    let valid = false;
-    let attempts = 0;
-    
-    while(!valid && attempts < 20) {
+    // Simple validation - limit attempts
+    for(let attempt = 0; attempt < 10; attempt++) {
       const digitCount = {};
       digits.forEach(d => {
         digitCount[d] = (digitCount[d] || 0) + 1;
@@ -1328,45 +1461,45 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const hasTriple = Object.values(digitCount).some(count => count >= 3);
       
-      if(hasTriple) {
-        // Ganti digit random
-        digits[4 + (attempts % 3)] = randDigit();
-        attempts++;
-      } else {
-        valid = true;
+      if (!hasTriple) {
+        break;
       }
+      
+      // Replace last digit if triple found
+      digits[digits.length - 1] = randDigit();
     }
     
     return shuffle(digits).join('');
   }
-
-  /* =====================
-     BBFS LADDER GENERATOR
-  ====================== */
+  
   function generateBBFSLadder(bbfs7d) {
+    if (!bbfs7d || bbfs7d.length !== 7) {
+      console.error("Invalid BBFS:", bbfs7d);
+      bbfs7d = "1234567"; // Fallback
+    }
+    
     const digits = bbfs7d.split('');
     
-    // BBFS 6D - 2 results
-    const bbfs6d = [
-      digits.slice(0, 6).join(''),
-      digits.slice(1, 7).join('')
-    ];
-    
-    // BBFS 5D - 4 results
-    const bbfs5d = [
-      digits.slice(0, 5).join(''),
-      digits.slice(1, 6).join(''),
-      digits.slice(2, 7).join(''),
-      (digits[0] + digits[2] + digits[3] + digits[5] + digits[6]).join('')
-    ];
-    
-    return { bbfs6d, bbfs5d };
+    return {
+      bbfs6d: [
+        digits.slice(0, 6).join(''),
+        digits.slice(1, 7).join('')
+      ],
+      bbfs5d: [
+        digits.slice(0, 5).join(''),
+        digits.slice(1, 6).join(''),
+        digits.slice(2, 7).join(''),
+        (digits[0] + digits[2] + digits[3] + digits[5] + digits[6]).join('')
+      ]
+    };
   }
-
-  /* =====================
-     RESULT ENGINE (UPDATED 8 RESULTS)
-  ====================== */
+  
   function generateResults(bbfs) {
+    if (!bbfs || bbfs.length !== 7) {
+      console.error("Invalid BBFS for results:", bbfs);
+      bbfs = "1234567"; // Fallback
+    }
+    
     const d = bbfs.split('');
 
     // 4D SET - 8 RESULTS
@@ -1383,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!set3d.includes(n)) set3d.push(n);
     }
 
-    // 2D JAGA - 5 + BB = 10 RESULTS (TETAP)
+    // 2D JAGA - 5 + BB = 10 RESULTS
     const main2d = [];
     while (main2d.length < 5) {
       const n = shuffle(d).slice(0,2).join('');
@@ -1428,163 +1561,137 @@ document.addEventListener('DOMContentLoaded', () => {
       cb3d
     };
   }
-
+  
   /* =====================
-     PROCESSING ANIMATION
-  ====================== */
-  function runProcessingAnimation() {
-    const fill = qs('#progressFill');
-    const text = qs('#progressText');
-    const log = qs('#processLog');
-    
-    // Reset
-    if (fill) fill.style.width = '0%';
-    if (text) text.textContent = 'Memulai analisis...';
-    if (log) log.innerHTML = '';
-    
-    const steps = [
-      {percent: 20, text: "Feeling nomor user diterima", 
-       log: `✓ FEELING DITERIMA: ${userData.feeling.split('').join(' ')}`},
-      
-      {percent: 40, text: "Menganalisa data number dari sistem", 
-       log: `⏳ MENGAKSES DATABASE: 5,247 hasil sebelumnya<br>✓ DATA TERLOAD 100%`},
-      
-      {percent: 60, text: "Menganalisa pola bandar dari hasil sebelumnya", 
-       log: userData.history.length > 0 
-         ? `⏳ MENDETEKSI POLA: ${userData.history.length} history terdeteksi`
-         : `⏳ MENDETEKSI POLA: menggunakan data sistem`},
-      
-      {percent: 80, text: "Menghitung probabilitas untuk hari ini", 
-       log: `⏳ MENGHITUNG PROBABILITAS...<br>✓ BBFS GENERATED: ${userData.bbfs.split('').join(' ')}`},
-      
-      {percent: 100, text: "Nomor prediksi sudah selesai !", 
-       log: `✅ NOMOR PREDIKSI SUDAH SELESAI!`}
-    ];
-    
-    let currentStep = 0;
-    
-    const interval = setInterval(() => {
-      if (currentStep < steps.length) {
-        const step = steps[currentStep];
-        if (fill) fill.style.width = step.percent + '%';
-        if (text) text.textContent = step.text;
-        
-        // Add log
-        if (log) {
-          const logLine = document.createElement('div');
-          logLine.innerHTML = step.log;
-          log.appendChild(logLine);
-          log.scrollTop = log.scrollHeight;
-        }
-        
-        currentStep++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          renderResult();
-          showPage('page-result');
-        }, 500);
-      }
-    }, 1200);
-  }
-
-  /* =====================
-     RENDER RESULT PAGE - CORRECTED LAYOUT
+     RENDER RESULT PAGE
   ====================== */
   function renderResult() {
-    // Render BBFS 7D - TOP SECTION
+    console.log("Rendering result page...");
+    
+    // Update BBFS display
     const bbfsBox = qs('#bbfsBox');
-    if (bbfsBox) {
+    if (bbfsBox && userData.bbfs) {
       bbfsBox.innerHTML = '';
-      userData.bbfs.split('').forEach((d, index) => {
+      userData.bbfs.split('').forEach((digit, index) => {
         const span = document.createElement('span');
         span.className = 'bbfs-digit';
-        span.textContent = d;
+        span.textContent = digit;
         span.style.animationDelay = `${index * 0.1}s`;
         bbfsBox.appendChild(span);
       });
     }
-
-    // Reset all result containers
-    if (qs('#resMain')) qs('#resMain').classList.add('hidden');
-    if (qs('#resColok')) qs('#resColok').classList.add('hidden');
-    if (qs('#resBBFSLadder')) qs('#resBBFSLadder').classList.add('hidden');
-
-    // Main Set Button - 4D/3D/2D
-    if (qs('#btnMainSet')) {
-      qs('#btnMainSet').onclick = () => {
-        qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
-        qs('#btnMainSet').classList.add('active');
+    
+    // Setup result section buttons
+    setupResultButtons();
+    
+    // Show main set by default
+    const mainSetBtn = qs('#btnMainSet');
+    if (mainSetBtn) {
+      mainSetBtn.click();
+    }
+  }
+  
+  function setupResultButtons() {
+    console.log("Setting up result buttons...");
+    
+    // Main Set Button
+    const mainSetBtn = qs('#btnMainSet');
+    if (mainSetBtn) {
+      mainSetBtn.onclick = function() {
+        console.log("Main Set clicked");
         
-        if (qs('#resColok')) qs('#resColok').classList.add('hidden');
-        if (qs('#resBBFSLadder')) qs('#resBBFSLadder').classList.add('hidden');
+        // Update active state
+        qsa('.choice-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        this.classList.add('active');
         
-        const el = qs('#resMain');
-        if (el) {
-          el.classList.remove('hidden');
+        // Hide other sections
+        const colokSection = qs('#resColok');
+        const ladderSection = qs('#resBBFSLadder');
+        if (colokSection) colokSection.classList.add('hidden');
+        if (ladderSection) ladderSection.classList.add('hidden');
+        
+        // Show main section
+        const mainSection = qs('#resMain');
+        if (mainSection) {
+          mainSection.classList.remove('hidden');
           
           let html = '<div class="result-title">🎯 PREDIKSI UTAMA</div>';
           
-          // 4D SET - 8 results (4 rows × 2 columns)
+          // 4D SET
           html += '<div style="margin-bottom: 30px;">';
           html += '<div style="color: #7b3ff2; font-size: 14px; margin-bottom: 15px; font-weight: 600; text-align: center;">4D SET (8 PREDIKSI)</div>';
           html += '<div class="result-grid">';
-          userData.results.set4d.forEach((num, index) => {
-            html += `<div class="result-number">${num}</div>`;
-          });
+          if (userData.results.set4d) {
+            userData.results.set4d.forEach(num => {
+              html += `<div class="result-number">${num}</div>`;
+            });
+          }
           html += '</div></div>';
           
-          // 3D JAGA - 8 results (4 rows × 2 columns)
+          // 3D JAGA
           html += '<div style="margin-bottom: 30px;">';
           html += '<div style="color: #00d4ff; font-size: 14px; margin-bottom: 15px; font-weight: 600; text-align: center;">3D JAGA (8 PREDIKSI)</div>';
           html += '<div class="result-grid">';
-          userData.results.set3d.forEach(num => {
-            html += `<div class="result-number">${num}</div>`;
-          });
+          if (userData.results.set3d) {
+            userData.results.set3d.forEach(num => {
+              html += `<div class="result-number">${num}</div>`;
+            });
+          }
           html += '</div></div>';
           
-          // 2D JAGA - 10 results (5 pairs, special layout)
+          // 2D JAGA
           html += '<div>';
           html += '<div style="color: #ff6b9d; font-size: 14px; margin-bottom: 15px; font-weight: 600; text-align: center;">2D JAGA (10 PREDIKSI)</div>';
           html += '<div class="result-grid-2d">';
-          // SAMA PERSIS seperti logika lama: 5 results × 2 (utama + balik)
-          const main2d = userData.results.set2d.filter((_, i) => i % 2 === 0);
-          main2d.forEach((num, index) => {
-            html += `<div class="result-number">${num}</div>`;
-            html += `<div class="result-number">${num[1]}${num[0]}</div>`;
-          });
+          if (userData.results.set2d) {
+            const main2d = userData.results.set2d.filter((_, i) => i % 2 === 0);
+            main2d.forEach(num => {
+              html += `<div class="result-number">${num}</div>`;
+              html += `<div class="result-number">${num[1]}${num[0]}</div>`;
+            });
+          }
           html += '</div></div>';
           
-          el.innerHTML = html;
+          mainSection.innerHTML = html;
         }
       };
     }
-
+    
     // Colok Set Button
-    if (qs('#btnColokSet')) {
-      qs('#btnColokSet').onclick = () => {
-        qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
-        qs('#btnColokSet').classList.add('active');
+    const colokSetBtn = qs('#btnColokSet');
+    if (colokSetBtn) {
+      colokSetBtn.onclick = function() {
+        console.log("Colok Set clicked");
         
-        if (qs('#resMain')) qs('#resMain').classList.add('hidden');
-        if (qs('#resBBFSLadder')) qs('#resBBFSLadder').classList.add('hidden');
+        // Update active state
+        qsa('.choice-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        this.classList.add('active');
         
-        const el = qs('#resColok');
-        if (el) {
-          el.classList.remove('hidden');
+        // Hide other sections
+        const mainSection = qs('#resMain');
+        const ladderSection = qs('#resBBFSLadder');
+        if (mainSection) mainSection.classList.add('hidden');
+        if (ladderSection) ladderSection.classList.add('hidden');
+        
+        // Show colok section
+        const colokSection = qs('#resColok');
+        if (colokSection) {
+          colokSection.classList.remove('hidden');
           
           let html = '<div class="result-title">🔄 COLOK BEBAS</div>';
           
-          // COLOK 1D - 3 results
+          // COLOK 1D
           html += '<div style="margin-bottom: 25px;">';
           html += '<div style="color: #7b3ff2; font-size: 14px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 1D</div>';
           html += '<div class="result-grid">';
-          userData.results.cb1d.forEach(num => {
-            html += `<div class="result-number">${num}</div>`;
-          });
-          // Tambah empty jika kurang dari 4
-          for(let i = userData.results.cb1d.length; i < 4; i++) {
-            html += '<div class="result-number" style="opacity: 0.5;">-</div>';
+          if (userData.results.cb1d) {
+            userData.results.cb1d.forEach(num => {
+              html += `<div class="result-number">${num}</div>`;
+            });
           }
           html += '</div></div>';
           
@@ -1592,69 +1699,79 @@ document.addEventListener('DOMContentLoaded', () => {
           html += '<div style="margin-bottom: 25px;">';
           html += '<div style="color: #00d4ff; font-size: 14px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 2D</div>';
           html += '<div class="result-grid">';
-          userData.results.cb2d.forEach(num => {
-            html += `<div class="result-number">${num}</div>`;
-          });
+          if (userData.results.cb2d) {
+            userData.results.cb2d.forEach(num => {
+              html += `<div class="result-number">${num}</div>`;
+            });
+          }
           html += '</div></div>';
           
           // COLOK 3D
           html += '<div>';
           html += '<div style="color: #ff6b9d; font-size: 14px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 3D</div>';
           html += '<div class="result-grid">';
-          userData.results.cb3d.forEach(num => {
-            html += `<div class="result-number">${num}</div>`;
-          });
+          if (userData.results.cb3d) {
+            userData.results.cb3d.forEach(num => {
+              html += `<div class="result-number">${num}</div>`;
+            });
+          }
           html += '</div></div>';
           
-          el.innerHTML = html;
+          colokSection.innerHTML = html;
         }
       };
     }
-
+    
     // BBFS Ladder Button
-    if (qs('#btnBbfsLadder')) {
-      qs('#btnBbfsLadder').onclick = () => {
-        qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
-        qs('#btnBbfsLadder').classList.add('active');
+    const bbfsLadderBtn = qs('#btnBbfsLadder');
+    if (bbfsLadderBtn) {
+      bbfsLadderBtn.onclick = function() {
+        console.log("BBFS Ladder clicked");
         
-        if (qs('#resMain')) qs('#resMain').classList.add('hidden');
-        if (qs('#resColok')) qs('#resColok').classList.add('hidden');
+        // Update active state
+        qsa('.choice-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        this.classList.add('active');
         
-        const el = qs('#resBBFSLadder');
-        if (el) {
-          el.classList.remove('hidden');
+        // Hide other sections
+        const mainSection = qs('#resMain');
+        const colokSection = qs('#resColok');
+        if (mainSection) mainSection.classList.add('hidden');
+        if (colokSection) colokSection.classList.add('hidden');
+        
+        // Show ladder section
+        const ladderSection = qs('#resBBFSLadder');
+        if (ladderSection) {
+          ladderSection.classList.remove('hidden');
           
           let html = '<div class="result-title">🔢 BBFS LADDER</div>';
           
           // 7D BBFS
           html += '<div style="text-align: center; margin-bottom: 10px; color: #a0a0c0; font-size: 13px;">7D BBFS</div>';
           html += '<div style="text-align: center; font-size: 20px; font-weight: 800; color: #7b3ff2; letter-spacing: 3px; margin-bottom: 30px;">';
-          html += userData.bbfs;
+          html += userData.bbfs || '-------';
           html += '</div>';
           
-          // 6D BBFS SET - 2 results, 2 columns
+          // 6D BBFS SET
           html += '<div style="margin-bottom: 30px;">';
           html += '<div class="bbfs-ladder-title">6D BBFS SET</div>';
           html += '<div class="bbfs-ladder-grid">';
-          userData.ladder.bbfs6d.forEach(num => {
-            html += `<div class="bbfs-ladder-item">${num}</div>`;
-          });
-          // Jika kurang dari 2, tambah placeholder
-          for(let i = userData.ladder.bbfs6d.length; i < 2; i++) {
-            html += '<div class="bbfs-ladder-item" style="opacity: 0.5;">------</div>';
+          if (userData.ladder.bbfs6d) {
+            userData.ladder.bbfs6d.forEach(num => {
+              html += `<div class="bbfs-ladder-item">${num}</div>`;
+            });
           }
           html += '</div></div>';
           
-          // 5D BBFS SET - 4 results, 2 rows × 2 columns
+          // 5D BBFS SET
           html += '<div style="margin-bottom: 30px;">';
           html += '<div class="bbfs-ladder-title">5D BBFS SET</div>';
           html += '<div class="bbfs-ladder-grid">';
-          userData.ladder.bbfs5d.forEach(num => {
-            html += `<div class="bbfs-ladder-item">${num}</div>`;
-          });
-          // Jika kurang dari 4, tambah placeholder
-          for(let i = userData.ladder.bbfs5d.length; i < 4; i++) {
-            html += '<div class="bbfs-ladder-item" style="opacity: 0.5;">-----</div>';
+          if (userData.ladder.bbfs5d) {
+            userData.ladder.bbfs5d.forEach(num => {
+              html += `<div class="bbfs-ladder-item">${num}</div>`;
+            });
           }
           html += '</div></div>';
           
@@ -1665,79 +1782,78 @@ document.addEventListener('DOMContentLoaded', () => {
           html += '</button>';
           html += '</div>';
           
-          el.innerHTML = html;
+          ladderSection.innerHTML = html;
           
-          // Add event listener for Generate Again button
-          if (qs('#btnGenerateAgain')) {
-            qs('#btnGenerateAgain').onclick = () => {
+          // Setup Generate Again button
+          const generateAgainBtn = qs('#btnGenerateAgain');
+          if (generateAgainBtn) {
+            generateAgainBtn.onclick = function() {
+              console.log("Generate Again clicked");
+              
               // Generate new data
               userData.bbfs = generateBBFS7D(userData.feeling);
               userData.ladder = generateBBFSLadder(userData.bbfs);
               userData.results = generateResults(userData.bbfs);
               
-              // Go to processing page
-              showPage('page-processing');
-              
-              // Start animation
-              setTimeout(() => {
-                runProcessingAnimation();
-              }, 50);
+              // Re-render results
+              renderResult();
             };
           }
         }
       };
     }
-
-    // Trigger Main Set by default
-    if (qs('#btnMainSet')) {
-      qs('#btnMainSet').click();
-    }
   }
-
+  
   /* =====================
      SHARE FUNCTIONS
   ====================== */
-  function shareToWhatsApp() {
-    const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
+  window.shareToWhatsApp = function() {
+    const text = `🎯 PREDIKSI TOGEL\nBBFS: ${userData.bbfs || 'Tidak tersedia'}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
-  }
-
-  function shareToTelegram() {
-    const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
+  };
+  
+  window.shareToTelegram = function() {
+    const text = `🎯 PREDIKSI TOGEL\nBBFS: ${userData.bbfs || 'Tidak tersedia'}`;
     const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
-  }
-
-  function copyResults() {
-    let text = `🎯 PREDIKSI TOGEL HARI INI\n\n`;
-    text += `BBFS: ${userData.bbfs}\n\n`;
-    
-    // Add 4D results
-    text += `4D SET:\n`;
-    userData.results.set4d.forEach(num => text += `${num} `);
-    text += `\n\n`;
-    
-    // Add 3D results
-    text += `3D JAGA:\n`;
-    userData.results.set3d.forEach(num => text += `${num} `);
-    text += `\n\n`;
-    
+  };
+  
+  window.copyResults = function() {
+    let text = `🎯 PREDIKSI TOGEL\n\nBBFS: ${userData.bbfs || 'Tidak tersedia'}\n\n`;
     text += `Gunakan prediksi dengan bijak!`;
     
     navigator.clipboard.writeText(text).then(() => {
-      alert('Hasil prediksi berhasil disalin ke clipboard!');
+      alert('Hasil prediksi berhasil disalin!');
     });
-  }
-
+  };
+  
   /* =====================
-     INIT
+     INITIALIZATION
   ====================== */
+  console.log("Initializing application...");
+  
+  // Setup all buttons
+  setupAllButtons();
+  
+  // Show intro page
   showPage('page-intro');
+  
+  console.log("Application initialized successfully!");
 });
+
+// Fallback in case DOMContentLoaded already fired
+if (document.readyState === 'loading') {
+  console.log("Document still loading, waiting...");
+} else {
+  console.log("Document already loaded, running now...");
+  // Trigger the DOMContentLoaded event manually
+  document.dispatchEvent(new Event('DOMContentLoaded'));
+}
 </script>
 
 </body>
 </html>
+
 
 
