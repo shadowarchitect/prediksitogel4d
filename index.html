@@ -1164,47 +1164,41 @@ body {
 </section>
 
 <script>
-// SIMPLE DEBUG - Check if page loads
-console.log("Page loading...");
-
-// Wait for DOM to be fully loaded
-window.addEventListener('DOMContentLoaded', function() {
-  console.log("DOM fully loaded");
+// SIMPLE WORKING VERSION
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("App loaded");
   
-  /* =====================
-     SIMPLE SHORTCUT FUNCTIONS
-  ====================== */
-  function qs(selector) {
-    return document.querySelector(selector);
-  }
+  // Simple helper functions
+  const qs = (s) => document.querySelector(s);
+  const qsa = (s) => document.querySelectorAll(s);
   
-  function qsa(selector) {
-    return document.querySelectorAll(selector);
-  }
+  // User data
+  const userData = {
+    feeling: '',
+    history: [],
+    bbfs: '',
+    ladder: {},
+    results: {}
+  };
   
+  // Page navigation
   function showPage(pageId) {
-    console.log("Showing page:", pageId);
-    // Hide all sections
-    const allSections = qsa('.section');
-    allSections.forEach(section => {
-      section.classList.add('hidden');
+    console.log("Going to page:", pageId);
+    // Hide all
+    document.querySelectorAll('.section').forEach(el => {
+      el.classList.add('hidden');
     });
-    
-    // Show target section
-    const targetSection = qs('#' + pageId);
-    if (targetSection) {
-      targetSection.classList.remove('hidden');
+    // Show target
+    const target = document.getElementById(pageId);
+    if (target) {
+      target.classList.remove('hidden');
       window.scrollTo(0, 0);
-    } else {
-      console.error("Page not found:", pageId);
     }
   }
   
-  /* =====================
-     SIMPLE UTILITY FUNCTIONS
-  ====================== */
-  function onlyDigits(str) {
-    return /^[0-9]+$/.test(str);
+  // Utility functions
+  function onlyDigits(s) {
+    return /^[0-9]+$/.test(s);
   }
   
   function randDigit() {
@@ -1220,266 +1214,17 @@ window.addEventListener('DOMContentLoaded', function() {
     return a;
   }
   
-  /* =====================
-     USER DATA STORAGE
-  ====================== */
-  const userData = {
-    feeling: '',
-    history: [],
-    bbfs: '',
-    ladder: {},
-    results: {}
-  };
-  
-  /* =====================
-     SETUP ALL BUTTON EVENT LISTENERS
-  ====================== */
-  function setupAllButtons() {
-    console.log("Setting up buttons...");
-    
-    // Start button
-    const startBtn = qs('#btnStartIntro');
-    if (startBtn) {
-      startBtn.onclick = function() {
-        console.log("Start button clicked");
-        showPage('page-country');
-      };
-    }
-    
-    // Mulai Analisis button
-    const mulaiBtn = qs('#btnMulai');
-    if (mulaiBtn) {
-      mulaiBtn.onclick = function() {
-        console.log("Mulai button clicked");
-        userData.feeling = '';
-        userData.history = [];
-        userData.bbfs = '';
-        userData.ladder = {};
-        userData.results = {};
-        showPage('page-input');
-      };
-    }
-    
-    // Back button
-    const backBtn = qs('#btnBack');
-    if (backBtn) {
-      backBtn.onclick = function() {
-        console.log("Back button clicked");
-        showPage('page-country');
-      };
-    }
-    
-    // Next Feeling button
-    const nextFeelingBtn = qs('#btnNextFeeling');
-    if (nextFeelingBtn) {
-      nextFeelingBtn.onclick = function() {
-        const feelingInput = qs('#feelingInput');
-        if (!feelingInput) {
-          alert("Input field not found!");
-          return;
-        }
-        
-        const value = feelingInput.value.trim();
-        console.log("Feeling input:", value);
-        
-        if (value.length !== 4 || !onlyDigits(value)) {
-          alert('Isi 4 angka');
-          return;
-        }
-        
-        userData.feeling = value;
-        console.log("Feeling saved:", userData.feeling);
-        showPage('page-history-choice');
-      };
-    }
-    
-    // With History button
-    const withHistoryBtn = qs('#btnWithHistory');
-    if (withHistoryBtn) {
-      withHistoryBtn.onclick = function() {
-        console.log("With History clicked");
-        showPage('page-history');
-      };
-    }
-    
-    // Skip History button - SIMPLE VERSION
-    const skipHistoryBtn = qs('#btnSkipHistory');
-    if (skipHistoryBtn) {
-      skipHistoryBtn.onclick = function() {
-        console.log("Skip History clicked");
-        userData.history = [];
-        
-        // Generate BBFS
-        userData.bbfs = generateBBFS7D(userData.feeling);
-        console.log("Generated BBFS:", userData.bbfs);
-        
-        // Generate ladder
-        userData.ladder = generateBBFSLadder(userData.bbfs);
-        
-        // Generate results
-        userData.results = generateResults(userData.bbfs);
-        
-        // DIRECT navigation to result page (skip animation for now)
-        renderResult();
-        showPage('page-result');
-      };
-    }
-    
-    // Feeling choice button
-    const feelingBtn = qs('#btnFeeling');
-    if (feelingBtn) {
-      feelingBtn.onclick = function() {
-        console.log("Feeling choice clicked");
-        showPage('page-history-choice');
-      };
-    }
-    
-    // Bocoran button
-    const bocoranBtn = qs('#btnBocoran');
-    if (bocoranBtn) {
-      bocoranBtn.onclick = function() {
-        console.log("Bocoran clicked");
-        showPage('page-education');
-      };
-    }
-    
-    // Edu Next button
-    const eduNextBtn = qs('#btnEduNext');
-    if (eduNextBtn) {
-      eduNextBtn.onclick = function() {
-        console.log("Edu Next clicked");
-        const feelingInput = qs('#feelingInput');
-        if (feelingInput) feelingInput.value = '';
-        showPage('page-input');
-      };
-    }
-    
-    // History Next button - SIMPLE VERSION
-    const historyNextBtn = qs('#btnHistoryNext');
-    if (historyNextBtn) {
-      historyNextBtn.onclick = function() {
-        console.log("History Next clicked");
-        
-        const historyInputs = qsa('.history');
-        const filledHistory = [];
-        
-        historyInputs.forEach(input => {
-          const value = input.value.trim();
-          if (value.length > 0) {
-            filledHistory.push(value);
-          }
-        });
-        
-        console.log("History inputs found:", filledHistory);
-        
-        // Jika ada history yang diisi, validasi
-        if (filledHistory.length > 0) {
-          if (filledHistory.some(h => h.length !== 4 || !onlyDigits(h))) {
-            alert('History harus 4 digit angka');
-            return;
-          }
-
-          const uniqueHistory = [...new Set(filledHistory)];
-          if (uniqueHistory.length !== filledHistory.length) {
-            alert('History tidak boleh ada angka yang sama');
-            return;
-          }
-
-          if (filledHistory.includes(userData.feeling)) {
-            alert('History tidak boleh sama dengan feeling');
-            return;
-          }
-        }
-        
-        userData.history = filledHistory;
-        
-        // Generate BBFS
-        userData.bbfs = generateBBFS7D(userData.feeling);
-        console.log("Generated BBFS:", userData.bbfs);
-        
-        // Generate ladder
-        userData.ladder = generateBBFSLadder(userData.bbfs);
-        
-        // Generate results
-        userData.results = generateResults(userData.bbfs);
-        
-        // DIRECT navigation to result page
-        renderResult();
-        showPage('page-result');
-      };
-    }
-    
-    // Home button
-    const homeBtn = qs('#btnHome');
-    if (homeBtn) {
-      homeBtn.onclick = function() {
-        showPage('page-intro');
-      };
-    }
-    
-    // Donate button
-    const donateBtn = qs('#btnDonate');
-    if (donateBtn) {
-      donateBtn.onclick = function() {
-        showPage('page-donation');
-      };
-    }
-    
-    // Back Home button
-    const backHomeBtn = qs('#btnBackHome');
-    if (backHomeBtn) {
-      backHomeBtn.onclick = function() {
-        showPage('page-intro');
-      };
-    }
-    
-    console.log("All buttons setup complete");
-  }
-  
-  /* =====================
-     GENERATOR FUNCTIONS
-  ====================== */
+  // Generator functions
   function generateBBFS7D(feeling) {
-    if (!feeling || feeling.length !== 4) {
-      console.error("Invalid feeling:", feeling);
-      feeling = "1234"; // Fallback
-    }
-    
     let digits = feeling.split('');
-    
-    // Add 3 random digits
     for(let i = 0; i < 3; i++) {
       digits.push(randDigit());
     }
-    
-    // Simple validation - limit attempts
-    for(let attempt = 0; attempt < 10; attempt++) {
-      const digitCount = {};
-      digits.forEach(d => {
-        digitCount[d] = (digitCount[d] || 0) + 1;
-      });
-      
-      const hasTriple = Object.values(digitCount).some(count => count >= 3);
-      
-      if (!hasTriple) {
-        break;
-      }
-      
-      // Replace last digit if triple found
-      digits[digits.length - 1] = randDigit();
-    }
-    
     return shuffle(digits).join('');
   }
   
   function generateBBFSLadder(bbfs7d) {
-    if (!bbfs7d || bbfs7d.length !== 7) {
-      console.error("Invalid BBFS:", bbfs7d);
-      bbfs7d = "1234567"; // Fallback
-    }
-    
     const digits = bbfs7d.split('');
-    
     return {
       bbfs6d: [
         digits.slice(0, 6).join(''),
@@ -1495,88 +1240,195 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   
   function generateResults(bbfs) {
-    if (!bbfs || bbfs.length !== 7) {
-      console.error("Invalid BBFS for results:", bbfs);
-      bbfs = "1234567"; // Fallback
-    }
-    
     const d = bbfs.split('');
-
-    // 4D SET - 8 RESULTS
+    
+    // 4D - 8 results
     const set4d = [];
     while (set4d.length < 8) {
       const n = shuffle(d).slice(0,4).join('');
       if (!set4d.includes(n)) set4d.push(n);
     }
-
-    // 3D JAGA - 8 RESULTS
+    
+    // 3D - 8 results
     const set3d = [];
     while (set3d.length < 8) {
       const n = shuffle(d).slice(0,3).join('');
       if (!set3d.includes(n)) set3d.push(n);
     }
-
-    // 2D JAGA - 5 + BB = 10 RESULTS
+    
+    // 2D - 5 results × 2 = 10
     const main2d = [];
     while (main2d.length < 5) {
       const n = shuffle(d).slice(0,2).join('');
       if (n.length === 2 && !main2d.includes(n)) main2d.push(n);
     }
-
+    
     const set2d = [];
     main2d.forEach(n => {
-      if (n.length === 2) {
-        set2d.push(n);
-        set2d.push(n[1] + n[0]);
-      }
+      set2d.push(n);
+      set2d.push(n[1] + n[0]);
     });
-
-    // COLOK SET
+    
+    // Colok
     const cb1d = [...new Set(d)].slice(0,3);
-
     const cb2d = [];
     for (let i = 0; i < cb1d.length; i++) {
       for (let j = i + 1; j < cb1d.length; j++) {
-        const a = cb1d[i];
-        const b = cb1d[j];
-        if (a && b) cb2d.push(a + b);
+        cb2d.push(cb1d[i] + cb1d[j]);
       }
     }
-
+    
     const cb3d = [];
     let idx = 0;
     cb2d.forEach(pair => {
-      if (pair.length === 2) {
-        cb3d.push(pair + d[idx % d.length]);
-        idx++;
-      }
+      cb3d.push(pair + d[idx % d.length]);
+      idx++;
     });
-
-    return {
-      set4d,
-      set3d,
-      set2d,
-      cb1d,
-      cb2d,
-      cb3d
-    };
+    
+    return { set4d, set3d, set2d, cb1d, cb2d, cb3d };
   }
   
-  /* =====================
-     RENDER RESULT PAGE
-  ====================== */
+  // Setup button clicks - SIMPLE DIRECT APPROACH
+  function setupButtons() {
+    console.log("Setting up buttons");
+    
+    // Page 0: Intro
+    document.getElementById('btnStartIntro')?.addEventListener('click', () => {
+      showPage('page-country');
+    });
+    
+    // Page 1: Country
+    document.getElementById('btnMulai')?.addEventListener('click', () => {
+      showPage('page-input');
+    });
+    
+    // Page 2: Feeling Input
+    document.getElementById('btnBack')?.addEventListener('click', () => {
+      showPage('page-country');
+    });
+    
+    document.getElementById('btnNextFeeling')?.addEventListener('click', () => {
+      const input = document.getElementById('feelingInput');
+      const value = input?.value.trim() || '';
+      
+      if (value.length !== 4 || !onlyDigits(value)) {
+        alert('Isi 4 angka');
+        return;
+      }
+      
+      userData.feeling = value;
+      console.log("Feeling saved:", userData.feeling);
+      showPage('page-history-choice');
+    });
+    
+    // Page 3: History Choice
+    document.getElementById('btnWithHistory')?.addEventListener('click', () => {
+      showPage('page-history');
+    });
+    
+    document.getElementById('btnSkipHistory')?.addEventListener('click', () => {
+      console.log("SKIP HISTORY clicked");
+      userData.history = [];
+      
+      // Generate everything
+      userData.bbfs = generateBBFS7D(userData.feeling);
+      console.log("BBFS generated:", userData.bbfs);
+      userData.ladder = generateBBFSLadder(userData.bbfs);
+      userData.results = generateResults(userData.bbfs);
+      
+      // GO DIRECTLY TO RESULT PAGE
+      setTimeout(() => {
+        renderResult();
+        showPage('page-result');
+      }, 100);
+    });
+    
+    // Page 4: History Input
+    document.getElementById('btnHistoryNext')?.addEventListener('click', () => {
+      console.log("HISTORY NEXT clicked");
+      
+      const inputs = document.querySelectorAll('.history');
+      const filledHistory = [];
+      
+      inputs.forEach(input => {
+        const val = input.value.trim();
+        if (val.length === 4 && onlyDigits(val)) {
+          filledHistory.push(val);
+        }
+      });
+      
+      // Validation
+      if (filledHistory.length > 0) {
+        const unique = [...new Set(filledHistory)];
+        if (unique.length !== filledHistory.length) {
+          alert('History tidak boleh ada angka yang sama');
+          return;
+        }
+        
+        if (filledHistory.includes(userData.feeling)) {
+          alert('History tidak boleh sama dengan feeling');
+          return;
+        }
+      }
+      
+      userData.history = filledHistory;
+      
+      // Generate everything
+      userData.bbfs = generateBBFS7D(userData.feeling);
+      console.log("BBFS generated:", userData.bbfs);
+      userData.ladder = generateBBFSLadder(userData.bbfs);
+      userData.results = generateResults(userData.bbfs);
+      
+      // GO DIRECTLY TO RESULT PAGE
+      setTimeout(() => {
+        renderResult();
+        showPage('page-result');
+      }, 100);
+    });
+    
+    // Page 5: Questionnaire
+    document.getElementById('btnFeeling')?.addEventListener('click', () => {
+      showPage('page-history-choice');
+    });
+    
+    document.getElementById('btnBocoran')?.addEventListener('click', () => {
+      showPage('page-education');
+    });
+    
+    // Page 6: Education
+    document.getElementById('btnEduNext')?.addEventListener('click', () => {
+      document.getElementById('feelingInput').value = '';
+      showPage('page-input');
+    });
+    
+    // Page 8: Result Page buttons
+    document.getElementById('btnHome')?.addEventListener('click', () => {
+      showPage('page-intro');
+    });
+    
+    document.getElementById('btnDonate')?.addEventListener('click', () => {
+      showPage('page-donation');
+    });
+    
+    // Page 9: Donation
+    document.getElementById('btnBackHome')?.addEventListener('click', () => {
+      showPage('page-intro');
+    });
+  }
+  
+  // Render result page
   function renderResult() {
-    console.log("Rendering result page...");
+    console.log("Rendering result page");
     
     // Update BBFS display
-    const bbfsBox = qs('#bbfsBox');
+    const bbfsBox = document.getElementById('bbfsBox');
     if (bbfsBox && userData.bbfs) {
       bbfsBox.innerHTML = '';
-      userData.bbfs.split('').forEach((digit, index) => {
+      userData.bbfs.split('').forEach((d, i) => {
         const span = document.createElement('span');
         span.className = 'bbfs-digit';
-        span.textContent = digit;
-        span.style.animationDelay = `${index * 0.1}s`;
+        span.textContent = d;
+        span.style.animationDelay = `${i * 0.1}s`;
         bbfsBox.appendChild(span);
       });
     }
@@ -1585,275 +1437,200 @@ window.addEventListener('DOMContentLoaded', function() {
     setupResultButtons();
     
     // Show main set by default
-    const mainSetBtn = qs('#btnMainSet');
-    if (mainSetBtn) {
-      mainSetBtn.click();
-    }
+    document.getElementById('btnMainSet')?.click();
   }
   
   function setupResultButtons() {
-    console.log("Setting up result buttons...");
-    
-    // Main Set Button
-    const mainSetBtn = qs('#btnMainSet');
-    if (mainSetBtn) {
-      mainSetBtn.onclick = function() {
-        console.log("Main Set clicked");
-        
-        // Update active state
-        qsa('.choice-btn').forEach(btn => {
-          btn.classList.remove('active');
-        });
+    // Main Set
+    const btnMainSet = document.getElementById('btnMainSet');
+    if (btnMainSet) {
+      btnMainSet.onclick = function() {
+        // Update active buttons
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Hide other sections
-        const colokSection = qs('#resColok');
-        const ladderSection = qs('#resBBFSLadder');
-        if (colokSection) colokSection.classList.add('hidden');
-        if (ladderSection) ladderSection.classList.add('hidden');
+        // Show/hide sections
+        document.getElementById('resColok')?.classList.add('hidden');
+        document.getElementById('resBBFSLadder')?.classList.add('hidden');
         
-        // Show main section
-        const mainSection = qs('#resMain');
-        if (mainSection) {
-          mainSection.classList.remove('hidden');
+        const el = document.getElementById('resMain');
+        if (el) {
+          el.classList.remove('hidden');
           
           let html = '<div class="result-title">🎯 PREDIKSI UTAMA</div>';
           
-          // 4D SET
+          // 4D
           html += '<div style="margin-bottom: 30px;">';
           html += '<div style="color: #7b3ff2; font-size: 14px; margin-bottom: 15px; font-weight: 600; text-align: center;">4D SET (8 PREDIKSI)</div>';
           html += '<div class="result-grid">';
-          if (userData.results.set4d) {
-            userData.results.set4d.forEach(num => {
-              html += `<div class="result-number">${num}</div>`;
-            });
-          }
+          userData.results.set4d?.forEach(num => {
+            html += `<div class="result-number">${num}</div>`;
+          });
           html += '</div></div>';
           
-          // 3D JAGA
+          // 3D
           html += '<div style="margin-bottom: 30px;">';
           html += '<div style="color: #00d4ff; font-size: 14px; margin-bottom: 15px; font-weight: 600; text-align: center;">3D JAGA (8 PREDIKSI)</div>';
           html += '<div class="result-grid">';
-          if (userData.results.set3d) {
-            userData.results.set3d.forEach(num => {
-              html += `<div class="result-number">${num}</div>`;
-            });
-          }
+          userData.results.set3d?.forEach(num => {
+            html += `<div class="result-number">${num}</div>`;
+          });
           html += '</div></div>';
           
-          // 2D JAGA
+          // 2D
           html += '<div>';
           html += '<div style="color: #ff6b9d; font-size: 14px; margin-bottom: 15px; font-weight: 600; text-align: center;">2D JAGA (10 PREDIKSI)</div>';
           html += '<div class="result-grid-2d">';
-          if (userData.results.set2d) {
-            const main2d = userData.results.set2d.filter((_, i) => i % 2 === 0);
-            main2d.forEach(num => {
-              html += `<div class="result-number">${num}</div>`;
-              html += `<div class="result-number">${num[1]}${num[0]}</div>`;
-            });
-          }
+          const main2d = userData.results.set2d?.filter((_, i) => i % 2 === 0) || [];
+          main2d.forEach(num => {
+            html += `<div class="result-number">${num}</div>`;
+            html += `<div class="result-number">${num[1]}${num[0]}</div>`;
+          });
           html += '</div></div>';
           
-          mainSection.innerHTML = html;
+          el.innerHTML = html;
         }
       };
     }
     
-    // Colok Set Button
-    const colokSetBtn = qs('#btnColokSet');
-    if (colokSetBtn) {
-      colokSetBtn.onclick = function() {
-        console.log("Colok Set clicked");
-        
-        // Update active state
-        qsa('.choice-btn').forEach(btn => {
-          btn.classList.remove('active');
-        });
+    // Colok Set
+    const btnColokSet = document.getElementById('btnColokSet');
+    if (btnColokSet) {
+      btnColokSet.onclick = function() {
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Hide other sections
-        const mainSection = qs('#resMain');
-        const ladderSection = qs('#resBBFSLadder');
-        if (mainSection) mainSection.classList.add('hidden');
-        if (ladderSection) ladderSection.classList.add('hidden');
+        document.getElementById('resMain')?.classList.add('hidden');
+        document.getElementById('resBBFSLadder')?.classList.add('hidden');
         
-        // Show colok section
-        const colokSection = qs('#resColok');
-        if (colokSection) {
-          colokSection.classList.remove('hidden');
+        const el = document.getElementById('resColok');
+        if (el) {
+          el.classList.remove('hidden');
           
           let html = '<div class="result-title">🔄 COLOK BEBAS</div>';
           
-          // COLOK 1D
+          // 1D
           html += '<div style="margin-bottom: 25px;">';
           html += '<div style="color: #7b3ff2; font-size: 14px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 1D</div>';
           html += '<div class="result-grid">';
-          if (userData.results.cb1d) {
-            userData.results.cb1d.forEach(num => {
-              html += `<div class="result-number">${num}</div>`;
-            });
-          }
+          userData.results.cb1d?.forEach(num => {
+            html += `<div class="result-number">${num}</div>`;
+          });
           html += '</div></div>';
           
-          // COLOK 2D
+          // 2D
           html += '<div style="margin-bottom: 25px;">';
           html += '<div style="color: #00d4ff; font-size: 14px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 2D</div>';
           html += '<div class="result-grid">';
-          if (userData.results.cb2d) {
-            userData.results.cb2d.forEach(num => {
-              html += `<div class="result-number">${num}</div>`;
-            });
-          }
+          userData.results.cb2d?.forEach(num => {
+            html += `<div class="result-number">${num}</div>`;
+          });
           html += '</div></div>';
           
-          // COLOK 3D
+          // 3D
           html += '<div>';
           html += '<div style="color: #ff6b9d; font-size: 14px; margin-bottom: 10px; font-weight: 600; text-align: center;">COLOK 3D</div>';
           html += '<div class="result-grid">';
-          if (userData.results.cb3d) {
-            userData.results.cb3d.forEach(num => {
-              html += `<div class="result-number">${num}</div>`;
-            });
-          }
+          userData.results.cb3d?.forEach(num => {
+            html += `<div class="result-number">${num}</div>`;
+          });
           html += '</div></div>';
           
-          colokSection.innerHTML = html;
+          el.innerHTML = html;
         }
       };
     }
     
-    // BBFS Ladder Button
-    const bbfsLadderBtn = qs('#btnBbfsLadder');
-    if (bbfsLadderBtn) {
-      bbfsLadderBtn.onclick = function() {
-        console.log("BBFS Ladder clicked");
-        
-        // Update active state
-        qsa('.choice-btn').forEach(btn => {
-          btn.classList.remove('active');
-        });
+    // BBFS Ladder
+    const btnBbfsLadder = document.getElementById('btnBbfsLadder');
+    if (btnBbfsLadder) {
+      btnBbfsLadder.onclick = function() {
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Hide other sections
-        const mainSection = qs('#resMain');
-        const colokSection = qs('#resColok');
-        if (mainSection) mainSection.classList.add('hidden');
-        if (colokSection) colokSection.classList.add('hidden');
+        document.getElementById('resMain')?.classList.add('hidden');
+        document.getElementById('resColok')?.classList.add('hidden');
         
-        // Show ladder section
-        const ladderSection = qs('#resBBFSLadder');
-        if (ladderSection) {
-          ladderSection.classList.remove('hidden');
+        const el = document.getElementById('resBBFSLadder');
+        if (el) {
+          el.classList.remove('hidden');
           
           let html = '<div class="result-title">🔢 BBFS LADDER</div>';
           
-          // 7D BBFS
+          // 7D
           html += '<div style="text-align: center; margin-bottom: 10px; color: #a0a0c0; font-size: 13px;">7D BBFS</div>';
           html += '<div style="text-align: center; font-size: 20px; font-weight: 800; color: #7b3ff2; letter-spacing: 3px; margin-bottom: 30px;">';
           html += userData.bbfs || '-------';
           html += '</div>';
           
-          // 6D BBFS SET
+          // 6D
           html += '<div style="margin-bottom: 30px;">';
           html += '<div class="bbfs-ladder-title">6D BBFS SET</div>';
           html += '<div class="bbfs-ladder-grid">';
-          if (userData.ladder.bbfs6d) {
-            userData.ladder.bbfs6d.forEach(num => {
-              html += `<div class="bbfs-ladder-item">${num}</div>`;
-            });
-          }
+          userData.ladder.bbfs6d?.forEach(num => {
+            html += `<div class="bbfs-ladder-item">${num}</div>`;
+          });
           html += '</div></div>';
           
-          // 5D BBFS SET
+          // 5D
           html += '<div style="margin-bottom: 30px;">';
           html += '<div class="bbfs-ladder-title">5D BBFS SET</div>';
           html += '<div class="bbfs-ladder-grid">';
-          if (userData.ladder.bbfs5d) {
-            userData.ladder.bbfs5d.forEach(num => {
-              html += `<div class="bbfs-ladder-item">${num}</div>`;
-            });
-          }
+          userData.ladder.bbfs5d?.forEach(num => {
+            html += `<div class="bbfs-ladder-item">${num}</div>`;
+          });
           html += '</div></div>';
           
-          // GENERATE AGAIN BUTTON
+          // Generate Again button
           html += '<div style="text-align: center; margin-top: 25px;">';
           html += '<button id="btnGenerateAgain" class="btn btn-secondary" style="max-width: 250px; margin: 0 auto; background: rgba(123, 63, 242, 0.1); border-color: rgba(123, 63, 242, 0.3);">';
           html += '🔄 Generate Again';
           html += '</button>';
           html += '</div>';
           
-          ladderSection.innerHTML = html;
+          el.innerHTML = html;
           
-          // Setup Generate Again button
-          const generateAgainBtn = qs('#btnGenerateAgain');
-          if (generateAgainBtn) {
-            generateAgainBtn.onclick = function() {
-              console.log("Generate Again clicked");
-              
-              // Generate new data
-              userData.bbfs = generateBBFS7D(userData.feeling);
-              userData.ladder = generateBBFSLadder(userData.bbfs);
-              userData.results = generateResults(userData.bbfs);
-              
-              // Re-render results
-              renderResult();
-            };
-          }
+          // Add Generate Again handler
+          document.getElementById('btnGenerateAgain')?.addEventListener('click', function() {
+            userData.bbfs = generateBBFS7D(userData.feeling);
+            userData.ladder = generateBBFSLadder(userData.bbfs);
+            userData.results = generateResults(userData.bbfs);
+            renderResult();
+            document.getElementById('btnMainSet')?.click();
+          });
         }
       };
     }
   }
   
-  /* =====================
-     SHARE FUNCTIONS
-  ====================== */
+  // Share functions
   window.shareToWhatsApp = function() {
-    const text = `🎯 PREDIKSI TOGEL\nBBFS: ${userData.bbfs || 'Tidak tersedia'}`;
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    const text = `🎯 PREDIKSI TOGEL\nBBFS: ${userData.bbfs || 'N/A'}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
   
   window.shareToTelegram = function() {
-    const text = `🎯 PREDIKSI TOGEL\nBBFS: ${userData.bbfs || 'Tidak tersedia'}`;
-    const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    const text = `🎯 PREDIKSI TOGEL\nBBFS: ${userData.bbfs || 'N/A'}`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`, '_blank');
   };
   
   window.copyResults = function() {
-    let text = `🎯 PREDIKSI TOGEL\n\nBBFS: ${userData.bbfs || 'Tidak tersedia'}\n\n`;
-    text += `Gunakan prediksi dengan bijak!`;
-    
+    const text = `🎯 PREDIKSI TOGEL\nBBFS: ${userData.bbfs || 'N/A'}`;
     navigator.clipboard.writeText(text).then(() => {
-      alert('Hasil prediksi berhasil disalin!');
+      alert('Hasil disalin!');
     });
   };
   
-  /* =====================
-     INITIALIZATION
-  ====================== */
-  console.log("Initializing application...");
-  
-  // Setup all buttons
-  setupAllButtons();
-  
-  // Show intro page
+  // Initialize
+  setupButtons();
   showPage('page-intro');
   
-  console.log("Application initialized successfully!");
+  console.log("App initialized");
 });
-
-// Fallback in case DOMContentLoaded already fired
-if (document.readyState === 'loading') {
-  console.log("Document still loading, waiting...");
-} else {
-  console.log("Document already loaded, running now...");
-  // Trigger the DOMContentLoaded event manually
-  document.dispatchEvent(new Event('DOMContentLoaded'));
-}
 </script>
-
 </body>
 </html>
+
 
 
 
