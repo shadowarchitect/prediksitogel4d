@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
       digits.slice(0, 5).join(''),
       digits.slice(1, 6).join(''),
       digits.slice(2, 7).join(''),
-      (digits[0] + digits[2] + digits[3] + digits[5] + digits[6])
+      digits[0] + digits[2] + digits[3] + digits[5] + digits[6]
     ];
     
     console.log('BBFS 6D:', bbfs6d);
@@ -475,3 +475,4 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing...');
   showPage('page-intro');
 });
+
