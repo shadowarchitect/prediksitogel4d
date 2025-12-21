@@ -1376,70 +1376,87 @@ function renderResult() {
   }
 
   /* =====================
-     RESULT ENGINE (UPDATED 8 RESULTS)
+     RENDER RESULT PAGE - CORRECTED LAYOUT
   ====================== */
-  function generateResults(bbfs) {
-    const d = bbfs.split('');
-
-    // 4D SET - 8 RESULTS
-    const set4d = [];
-    while (set4d.length < 8) {
-      const n = shuffle(d).slice(0,4).join('');
-      if (!set4d.includes(n)) set4d.push(n);
-    }
-
-    // 3D JAGA - 8 RESULTS
-    const set3d = [];
-    while (set3d.length < 8) {
-      const n = shuffle(d).slice(0,3).join('');
-      if (!set3d.includes(n)) set3d.push(n);
-    }
-
-    // 2D JAGA - 5 + BB = 10 RESULTS (TETAP)
-    const main2d = [];
-    while (main2d.length < 5) {
-      const n = shuffle(d).slice(0,2).join('');
-      if (n.length === 2 && !main2d.includes(n)) main2d.push(n);
-    }
-
-    const set2d = [];
-    main2d.forEach(n => {
-      if (n.length === 2) {
-        set2d.push(n);
-        set2d.push(n[1] + n[0]);
-      }
-    });
-
-    // COLOK SET
-    const cb1d = [...new Set(d)].slice(0,3);
-
-    const cb2d = [];
-    for (let i = 0; i < cb1d.length; i++) {
-      for (let j = i + 1; j < cb1d.length; j++) {
-        const a = cb1d[i];
-        const b = cb1d[j];
-        if (a && b) cb2d.push(a + b);
-      }
-    }
-
-    const cb3d = [];
-    let idx = 0;
-    cb2d.forEach(pair => {
-      if (pair.length === 2) {
-        cb3d.push(pair + d[idx % d.length]);
-        idx++;
-      }
-    });
-
-    return {
-      set4d,
-      set3d,
-      set2d,
-      cb1d,
-      cb2d,
-      cb3d
+function renderResult() {
+    // Helper function untuk membuat digit dengan animasi
+    const createDigitSpan = (digit, delay) => {
+        const span = document.createElement('span');
+        span.className = 'bbfs-digit';
+        span.textContent = digit;
+        span.style.animationDelay = `${delay}s`;
+        return span;
     };
-  }
+
+    // Helper function untuk render angka (dengan atau tanpa spasi)
+    const renderNumberSet = (containerId, numbers, digitsPerNumber) => {
+        const container = qs(`#${containerId}`);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        if (!numbers || numbers.length === 0) {
+            console.warn(`No data for ${containerId}`);
+            return;
+        }
+        
+        numbers.forEach((numStr, index) => {
+            // Bersihkan spasi jika ada, lalu ambil digit
+            const cleanNum = numStr.replace(/\s/g, '');
+            const digits = cleanNum.split('');
+            
+            // Pastikan jumlah digit sesuai
+            if (digits.length !== digitsPerNumber) {
+                console.warn(`Invalid number of digits for ${containerId}:`, numStr);
+                return;
+            }
+            
+            // Buat container untuk tiap baris angka
+            const rowContainer = document.createElement('div');
+            rowContainer.style.cssText = 'display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;';
+            
+            // Tambahkan masing-masing digit
+            digits.forEach((digit, digitIndex) => {
+                const delay = (index * 0.3) + (digitIndex * 0.1);
+                rowContainer.appendChild(createDigitSpan(digit, delay));
+            });
+            
+            container.appendChild(rowContainer);
+        });
+    };
+
+    // 1. Render BBFS 7D - TOP SECTION
+    const bbfs7dBox = qs('#bbfs7dBox');
+    if (bbfs7dBox) {
+        bbfs7dBox.innerHTML = '';
+        const digits = userData.bbfs.split('');
+        digits.forEach((d, index) => {
+            bbfs7dBox.appendChild(createDigitSpan(d, index * 0.1));
+        });
+    }
+
+    // 2. Render BBFS 6D (2 baris, 6 digit per baris)
+    // PASTIKAN: userData.ladder.bbfs6d adalah array of strings (6 digit tanpa spasi)
+    if (userData.ladder && userData.ladder.bbfs6d) {
+        renderNumberSet('bbfs6dBox', userData.ladder.bbfs6d, 6);
+    } else {
+        console.error('No 6D ladder data found!');
+        const bbfs6dBox = qs('#bbfs6dBox');
+        if (bbfs6dBox) bbfs6dBox.innerHTML = '<div class="no-data">Data 6D tidak tersedia</div>';
+    }
+
+    // 3. Render BBFS 5D (4 baris, 5 digit per baris)
+    // PASTIKAN: userData.ladder.bbfs5d adalah array of strings (5 digit tanpa spasi)
+    if (userData.ladder && userData.ladder.bbfs5d) {
+        renderNumberSet('bbfs5dBox', userData.ladder.bbfs5d, 5);
+    } else {
+        console.error('No 5D ladder data found!');
+        const bbfs5dBox = qs('#bbfs5dBox');
+        if (bbfs5dBox) bbfs5dBox.innerHTML = '<div class="no-data">Data 5D tidak tersedia</div>';
+    }
+
+    console.log('Result page rendered successfully');
+}
 
   /* =====================
      PROCESSING ANIMATION - REALISTIC (FIXED)
@@ -1751,6 +1768,7 @@ function renderResult() {
 
 </body>
 </html>
+
 
 
 
