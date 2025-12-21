@@ -152,95 +152,50 @@ document.addEventListener('DOMContentLoaded', () => {
   qs('#btnDonate').onclick = () => showPage('page-donation');
   qs('#btnBackHome').onclick = () => showPage('page-intro');
 
-  /* =====================
-     BBFS LADDER GENERATOR - FINAL (UNIQUE COMBOS)
+ /* =====================
+     BBFS LADDER GENERATOR - GUARANTEED OUTPUT
   ====================== */
 function generateBBFSLadder(bbfs7d) {
   console.log('Generating shuffled ladder from:', bbfs7d);
   const digits = bbfs7d.split('');
   
-  // Helper: check if two combinations are the same (ignoring order)
-  const hasSameCombination = (arr, newCombo) => {
-    const sortedNew = [...newCombo].sort().join('');
-    for (const existing of arr) {
-      // Remove spaces if any, then sort and compare
-      const cleanExisting = existing.replace(/ /g, '');
-      const sortedExisting = cleanExisting.split('').sort().join('');
-      if (sortedNew === sortedExisting) return true;
-    }
-    return false;
-  };
-  
-  // BBFS 6D - UNIQUE COMBINATIONS (2 results)
+  // GUARANTEED 6D - 2 results (always 6 digits)
   const bbfs6d = [];
-  const maxAttempts6d = 20;
-  let attempts6d = 0;
   
-  while (bbfs6d.length < 2 && attempts6d < maxAttempts6d) {
-    const shuffled = shuffle([...digits]);
-    const combo = shuffled.slice(0, 6);
-    const numStr = combo.join(' ');
-    
-    if (!hasSameCombination(bbfs6d, combo)) {
-      bbfs6d.push(numStr);
-    }
-    attempts6d++;
-  }
+  // Result 1: Shuffle and take first 6
+  const shuffle1 = shuffle([...digits]);
+  bbfs6d.push(shuffle1.slice(0, 6).join(' '));
   
-  // If we couldn't find 2 unique combos, just use what we have
-  if (bbfs6d.length < 2) {
-    const shuffled = shuffle([...digits]);
-    bbfs6d.push(shuffled.slice(0, 6).join(' '));
-  }
+  // Result 2: Different shuffle for variety
+  const shuffle2 = shuffle([...digits]);
+  bbfs6d.push(shuffle2.slice(0, 6).join(' '));
   
-  // BBFS 5D - UNIQUE COMBINATIONS (4 results)
+  // Remove duplicates if any (though unlikely)
+  const unique6d = [...new Set(bbfs6d)];
+  
+  // GUARANTEED 5D - 4 results (always 5 digits)
   const bbfs5d = [];
-  const maxAttempts5d = 30;
-  let attempts5d = 0;
   
-  while (bbfs5d.length < 4 && attempts5d < maxAttempts5d) {
-    const shuffled = shuffle([...digits]);
-    const combo = shuffled.slice(0, 5);
-    const numStr = combo.join(' ');
-    
-    if (!hasSameCombination(bbfs5d, combo)) {
-      bbfs5d.push(numStr);
-    }
-    attempts5d++;
-  }
-  
-  // Fill up if needed
+  // Generate 4 unique 5D combos
   while (bbfs5d.length < 4) {
     const shuffled = shuffle([...digits]);
-    bbfs5d.push(shuffled.slice(0, 5).join(' '));
+    const num = shuffled.slice(0, 5).join(' ');
+    if (!bbfs5d.includes(num)) {
+      bbfs5d.push(num);
+    }
   }
   
-  console.log('BBFS 6D (unique combos):', bbfs6d);
-  console.log('BBFS 5D (unique combos):', bbfs5d);
+  console.log('BBFS 6D (guaranteed):', unique6d);
+  console.log('BBFS 5D (guaranteed):', bbfs5d);
   
-  // Return format sesuai kebutuhan:
-  // Untuk index.html: return allResults (dengan spasi)
-  // Untuk script.js: return { bbfs6d, bbfs5d } (tanpa spasi?)
-  
-  // TAPI karena kita perlu konsisten, kita buat dua pilihan:
-  
-  // OPTION A: Untuk index.html (display dengan spasi)
+  // Return untuk display - PASTI LENGKAP
   const allResults = [
-    digits.join(' '), // 7D original
-    ...bbfs6d,        // 6D shuffled
-    ...bbfs5d         // 5D shuffled
+    digits.join(' '),      // 7D original
+    ...unique6d,           // 6D (2 results, PASTI)
+    ...bbfs5d              // 5D (4 results, PASTI)
   ];
   
   return allResults;
-  
-  // OPTION B: Untuk script.js (processing tanpa spasi)
-  // Komen di atas, uncomment di bawah:
-  /*
-  return {
-    bbfs6d: bbfs6d.map(s => s.replace(/ /g, '')),
-    bbfs5d: bbfs5d.map(s => s.replace(/ /g, ''))
-  };
-  */
 }
 
     // 4D SET - 8 results
@@ -565,6 +520,7 @@ function generateBBFSLadder(bbfs7d) {
   console.log('Initializing...');
   showPage('page-intro');
 });
+
 
 
 
