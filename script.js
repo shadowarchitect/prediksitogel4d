@@ -151,8 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
   qs('#btnHome').onclick = () => showPage('page-intro');
   qs('#btnDonate').onclick = () => showPage('page-donation');
   qs('#btnBackHome').onclick = () => showPage('page-intro');
+
   /* =====================
-     BBFS GENERATION - FIXED
+     BBFS GENERATION - FIXED (SHUFFLED LADDER)
   ====================== */
   function generateBBFS7D(feeling) {
     console.log('Generating BBFS from feeling:', feeling);
@@ -195,23 +196,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function generateBBFSLadder(bbfs7d) {
-    console.log('Generating ladder from:', bbfs7d);
+    console.log('Generating shuffled ladder from:', bbfs7d);
     const digits = bbfs7d.split('');
     
-    const bbfs6d = [
-      digits.slice(0, 6).join(''),
-      digits.slice(1, 7).join('')
-    ];
+    // BBFS 6D - shuffled (not sequential)
+    const bbfs6d = [];
+    while (bbfs6d.length < 2) {
+      const shuffled = shuffle([...digits]);
+      const num = shuffled.slice(0, 6).join('');
+      if (!bbfs6d.includes(num)) bbfs6d.push(num);
+    }
     
-    const bbfs5d = [
-      digits.slice(0, 5).join(''),
-      digits.slice(1, 6).join(''),
-      digits.slice(2, 7).join(''),
-      digits[0] + digits[2] + digits[3] + digits[5] + digits[6]
-    ];
+    // BBFS 5D - shuffled (not sequential)
+    const bbfs5d = [];
+    while (bbfs5d.length < 4) {
+      const shuffled = shuffle([...digits]);
+      const num = shuffled.slice(0, 5).join('');
+      if (!bbfs5d.includes(num)) bbfs5d.push(num);
+    }
     
-    console.log('BBFS 6D:', bbfs6d);
-    console.log('BBFS 5D:', bbfs5d);
+    console.log('BBFS 6D (shuffled):', bbfs6d);
+    console.log('BBFS 5D (shuffled):', bbfs5d);
     
     return { bbfs6d, bbfs5d };
   }
@@ -281,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 1. Generate BBFS 7D
       userData.bbfs = generateBBFS7D(userData.feeling);
       
-      // 2. Generate ladder
+      // 2. Generate shuffled ladder
       userData.ladder = generateBBFSLadder(userData.bbfs);
       
       // 3. Generate results
@@ -342,147 +347,194 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================
-     RENDER RESULT - WORKING VERSION
+     RENDER RESULT - FOR NEW UI (BBFS VISIBLE FIRST)
   ====================== */
   function renderResult() {
-    console.log('Rendering result...');
+    console.log('Rendering result for new UI...');
     
-    // Render BBFS 7D
-    const bbfsBox = qs('#bbfsBox');
-    bbfsBox.innerHTML = '';
-    userData.bbfs.split('').forEach((d, i) => {
-      const span = document.createElement('span');
-      span.className = 'bbfs-digit';
-      span.textContent = d;
-      span.style.animationDelay = `${i * 0.1}s`;
-      bbfsBox.appendChild(span);
-    });
+    // Update Hero Info
+    const country = localStorage.getItem('selectedCountry') || 'Singapore'; // sesuaikan
+    const today = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+    const formattedDate = today.toLocaleDateString('id-ID', options);
     
-    // Reset containers
-    qs('#resMain').classList.add('hidden');
-    qs('#resColok').classList.add('hidden');
-    if (qs('#resBBFSLadder')) qs('#resBBFSLadder').classList.add('hidden');
-    
-    // Setup buttons
-    qs('#btnMainSet').onclick = () => showResultSet('main');
-    qs('#btnColokSet').onclick = () => showResultSet('colok');
-    if (qs('#btnBbfsLadder')) {
-      qs('#btnBbfsLadder').onclick = () => showResultSet('bbfs');
-    }
-    
-    // Show main set by default
-    showResultSet('main');
-  }
+    qs('#resultTitle').textContent = `Hasil Prediksi Togel - ${country}`;
+    qs('#resultDate').textContent = formattedDate;
 
-  function showResultSet(type) {
-    console.log('Showing result set:', type);
-    
-    // Reset active buttons
-    qsa('.choice-btn').forEach(btn => btn.classList.remove('active'));
-    
-    // Hide all containers
+    // Render BBFS 7D (1 2 3 4 5 6 7)
+    const bbfs7dBox = qs('#bbfs7dBox');
+    if (bbfs7dBox) {
+      bbfs7dBox.innerHTML = '';
+      userData.bbfs.split('').forEach(d => {
+        const span = document.createElement('span');
+        span.textContent = d;
+        span.style.display = 'inline-block';
+        span.style.margin = '0 4px';
+        span.style.fontSize = '24px';
+        span.style.fontWeight = 'bold';
+        span.style.color = '#7b3ff2';
+        bbfs7dBox.appendChild(span);
+      });
+    }
+
+    // Render BBFS 6D (2 results, shuffled)
+    const bbfs6dBox = qs('#bbfs6dBox');
+    if (bbfs6dBox) {
+      bbfs6dBox.innerHTML = '';
+      userData.ladder.bbfs6d.forEach(num => {
+        const div = document.createElement('div');
+        div.textContent = num;
+        div.style.textAlign = 'center';
+        div.style.padding = '10px';
+        div.style.margin = '5px';
+        div.style.border = '1px solid #ddd';
+        div.style.borderRadius = '8px';
+        div.style.backgroundColor = '#f9f9f9';
+        div.style.fontWeight = 'bold';
+        bbfs6dBox.appendChild(div);
+      });
+    }
+
+    // Render BBFS 5D (4 results, shuffled)
+    const bbfs5dBox = qs('#bbfs5dBox');
+    if (bbfs5dBox) {
+      bbfs5dBox.innerHTML = '';
+      userData.ladder.bbfs5d.forEach(num => {
+        const div = document.createElement('div');
+        div.textContent = num;
+        div.style.textAlign = 'center';
+        div.style.padding = '10px';
+        div.style.margin = '5px';
+        div.style.border = '1px solid #ddd';
+        div.style.borderRadius = '8px';
+        div.style.backgroundColor = '#f9f9f9';
+        div.style.fontWeight = 'bold';
+        bbfs5dBox.appendChild(div);
+      });
+    }
+
+    // Setup tabs for 4D3D2D and Colok
     qs('#resMain').classList.add('hidden');
     qs('#resColok').classList.add('hidden');
-    if (qs('#resBBFSLadder')) qs('#resBBFSLadder').classList.add('hidden');
-    
-    let container, html = '';
-    
-    switch(type) {
-      case 'main':
-        qs('#btnMainSet').classList.add('active');
-        container = qs('#resMain');
-        
-        html = '<div class="result-title">🎯 4D / 3D / 2D</div>';
-        
-        // 4D
-        html += '<div style="margin-bottom: 25px;">';
-        html += '<div style="color: #7b3ff2; font-size: 14px; margin-bottom: 10px;">4D SET (8)</div>';
-        html += '<div class="result-grid">';
+
+    // Button for Main Set (4D/3D/2D)
+    qs('#btnMainSet').onclick = () => {
+      qs('#resColok').classList.add('hidden');
+      const el = qs('#resMain');
+      el.classList.remove('hidden');
+      
+      // Render 4D
+      const set4dEl = qs('#set4d');
+      if(set4dEl) {
+        set4dEl.innerHTML = '';
         userData.results.set4d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
+          const div = document.createElement('div');
+          div.textContent = num;
+          div.style.textAlign = 'center';
+          div.style.padding = '8px';
+          div.style.margin = '4px';
+          div.style.border = '1px solid #00d4ff';
+          div.style.borderRadius = '6px';
+          div.style.backgroundColor = '#e6f7ff';
+          set4dEl.appendChild(div);
         });
-        html += '</div></div>';
-        
-        // 3D
-        html += '<div style="margin-bottom: 25px;">';
-        html += '<div style="color: #00d4ff; font-size: 14px; margin-bottom: 10px;">3D JAGA (8)</div>';
-        html += '<div class="result-grid">';
+      }
+      
+      // Render 3D
+      const set3dEl = qs('#set3d');
+      if(set3dEl) {
+        set3dEl.innerHTML = '';
         userData.results.set3d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
+          const div = document.createElement('div');
+          div.textContent = num;
+          div.style.textAlign = 'center';
+          div.style.padding = '8px';
+          div.style.margin = '4px';
+          div.style.border = '1px solid #00d4ff';
+          div.style.borderRadius = '6px';
+          div.style.backgroundColor = '#e6f7ff';
+          set3dEl.appendChild(div);
         });
-        html += '</div></div>';
-        
-        // 2D
-        html += '<div>';
-        html += '<div style="color: #ff6b9d; font-size: 14px; margin-bottom: 10px;">2D JAGA (10)</div>';
-        html += '<div class="result-grid-2d">';
-        const unique2d = [...new Set(userData.results.set2d.slice(0, 10))];
-        unique2d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
+      }
+      
+      // Render 2D
+      const set2dEl = qs('#set2d');
+      if(set2dEl) {
+        set2dEl.innerHTML = '';
+        userData.results.set2d.forEach(num => {
+          const div = document.createElement('div');
+          div.textContent = num;
+          div.style.textAlign = 'center';
+          div.style.padding = '8px';
+          div.style.margin = '4px';
+          div.style.border = '1px solid #00d4ff';
+          div.style.borderRadius = '6px';
+          div.style.backgroundColor = '#e6f7ff';
+          set2dEl.appendChild(div);
         });
-        html += '</div></div>';
-        
-        break;
-        
-      case 'colok':
-        qs('#btnColokSet').classList.add('active');
-        container = qs('#resColok');
-        
-        html = '<div class="result-title">🔄 COLOK BEBAS</div>';
-        
-        html += '<div style="margin-bottom: 25px;">';
-        html += '<div style="color: #7b3ff2; font-size: 14px; margin-bottom: 10px;">COLOK 1D</div>';
-        html += '<div class="result-grid">';
+      }
+    };
+
+    // Button for Colok
+    qs('#btnColokSet').onclick = () => {
+      qs('#resMain').classList.add('hidden');
+      const el = qs('#resColok');
+      el.classList.remove('hidden');
+      
+      // Render Colok 1D
+      const cb1dEl = qs('#cb1d');
+      if(cb1dEl) {
+        cb1dEl.innerHTML = '';
         userData.results.cb1d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
+          const div = document.createElement('div');
+          div.textContent = num;
+          div.style.textAlign = 'center';
+          div.style.padding = '8px';
+          div.style.margin = '4px';
+          div.style.border = '1px solid #ff6b9d';
+          div.style.borderRadius = '6px';
+          div.style.backgroundColor = '#ffe6f0';
+          cb1dEl.appendChild(div);
         });
-        html += '</div></div>';
-        
-        html += '<div style="margin-bottom: 25px;">';
-        html += '<div style="color: #00d4ff; font-size: 14px; margin-bottom: 10px;">COLOK 2D</div>';
-        html += '<div class="result-grid">';
+      }
+      
+      // Render Colok 2D
+      const cb2dEl = qs('#cb2d');
+      if(cb2dEl) {
+        cb2dEl.innerHTML = '';
         userData.results.cb2d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
+          const div = document.createElement('div');
+          div.textContent = num;
+          div.style.textAlign = 'center';
+          div.style.padding = '8px';
+          div.style.margin = '4px';
+          div.style.border = '1px solid #ff6b9d';
+          div.style.borderRadius = '6px';
+          div.style.backgroundColor = '#ffe6f0';
+          cb2dEl.appendChild(div);
         });
-        html += '</div></div>';
-        
-        html += '<div>';
-        html += '<div style="color: #ff6b9d; font-size: 14px; margin-bottom: 10px;">COLOK 3D</div>';
-        html += '<div class="result-grid">';
+      }
+      
+      // Render Colok 3D
+      const cb3dEl = qs('#cb3d');
+      if(cb3dEl) {
+        cb3dEl.innerHTML = '';
         userData.results.cb3d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
+          const div = document.createElement('div');
+          div.textContent = num;
+          div.style.textAlign = 'center';
+          div.style.padding = '8px';
+          div.style.margin = '4px';
+          div.style.border = '1px solid #ff6b9d';
+          div.style.borderRadius = '6px';
+          div.style.backgroundColor = '#ffe6f0';
+          cb3dEl.appendChild(div);
         });
-        html += '</div></div>';
-        
-        break;
-        
-      case 'bbfs':
-        qs('#btnBbfsLadder').classList.add('active');
-        container = qs('#resBBFSLadder');
-        
-        html = '<div class="result-title">🔢 BBFS LADDER</div>';
-        
-        html += '<div style="margin-bottom: 25px;">';
-        html += '<div style="color: #7b3ff2; font-size: 14px; margin-bottom: 15px;">BBFS 6D</div>';
-        html += '<div class="result-grid">';
-        userData.ladder.bbfs6d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
-        });
-        html += '</div></div>';
-        
-        html += '<div>';
-        html += '<div style="color: #00d4ff; font-size: 14px; margin-bottom: 15px;">BBFS 5D</div>';
-        html += '<div class="result-grid">';
-        userData.ladder.bbfs5d.forEach(num => {
-          html += `<div class="result-number">${num}</div>`;
-        });
-        html += '</div></div>';
-        
-        break;
-    }
-    
-    container.innerHTML = html;
-    container.classList.remove('hidden');
+      }
+    };
+
+    // Auto-show Main Set by default
+    qs('#btnMainSet').click();
   }
 
   /* =====================
@@ -491,5 +543,3 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing...');
   showPage('page-intro');
 });
-
-
