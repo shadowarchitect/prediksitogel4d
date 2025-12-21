@@ -1467,37 +1467,53 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Render BBFS 6D - NEW SECTION
-    const bbfs6dBox = qs('#bbfs6dBox');  // ← NEW
-    if (bbfs6dBox) {
-      bbfs6dBox.innerHTML = '';
-      userData.ladder.bbfs6d.forEach((num, index) => {
-        const span = document.createElement('span');
-        span.className = 'bbfs-digit';
-        span.textContent = num;
-        span.style.animationDelay = `${index * 0.1}s`;
-        span.style.display = 'inline-block';
-        span.style.margin = '0 5px';
-        span.style.fontSize = '18px';
-        bbfs6dBox.appendChild(span);
-      });
-    }
+    // Di renderResult() function, ganti bagian BBFS 6D:
+const bbfs6dBox = qs('#bbfs6dBox');
+if (bbfs6dBox) {
+  bbfs6dBox.innerHTML = '';
+  
+  userData.ladder.bbfs6d.forEach((num, index) => {
+    // Buat container untuk tiap 6-digit number
+    const container = document.createElement('div');
+    container.style.cssText = 'display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;';
+    
+    // Split number into individual digits
+    const digits = num.split('');
+    digits.forEach((digit, digitIndex) => {
+      const span = document.createElement('span');
+      span.className = 'bbfs-digit';
+      span.textContent = digit;
+      span.style.animationDelay = `${(index * 0.5) + (digitIndex * 0.1)}s`;
+      container.appendChild(span);
+    });
+    
+    bbfs6dBox.appendChild(container);
+  });
+}
 
-    // Render BBFS 5D - NEW SECTION
-    const bbfs5dBox = qs('#bbfs5dBox');  // ← NEW
-    if (bbfs5dBox) {
-      bbfs5dBox.innerHTML = '';
-      userData.ladder.bbfs5d.forEach((num, index) => {
-        const span = document.createElement('span');
-        span.className = 'bbfs-digit';
-        span.textContent = num;
-        span.style.animationDelay = `${index * 0.1}s`;
-        span.style.display = 'inline-block';
-        span.style.margin = '0 5px';
-        span.style.fontSize = '18px';
-        bbfs5dBox.appendChild(span);
-      });
-    }
+// Dan untuk BBFS 5D:
+const bbfs5dBox = qs('#bbfs5dBox');
+if (bbfs5dBox) {
+  bbfs5dBox.innerHTML = '';
+  
+  userData.ladder.bbfs5d.forEach((num, index) => {
+    // Buat container untuk tiap 5-digit number
+    const container = document.createElement('div');
+    container.style.cssText = 'display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;';
+    
+    // Split number into individual digits
+    const digits = num.split('');
+    digits.forEach((digit, digitIndex) => {
+      const span = document.createElement('span');
+      span.className = 'bbfs-digit';
+      span.textContent = digit;
+      span.style.animationDelay = `${(index * 0.5) + (digitIndex * 0.1)}s`;
+      container.appendChild(span);
+    });
+    
+    bbfs5dBox.appendChild(container);
+  });
+}
 
     // Reset all result containers
     qs('#resMain').classList.add('hidden');
@@ -1647,6 +1663,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
