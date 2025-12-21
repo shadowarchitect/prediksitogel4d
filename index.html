@@ -1281,6 +1281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Questionnaire -> History Input (jika pilih FEELING)
   qs('#btnFeeling').onclick = () => {
+    console.log('Feeling clicked');
     qs('#btnFeeling').classList.add('active');
     qs('#btnBocoran').classList.remove('active');
     setTimeout(() => showPage('page-history'), 300);
@@ -1288,6 +1289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Questionnaire -> Education (jika pilih BOCORAN) 
   qs('#btnBocoran').onclick = () => {
+    console.log('Bocoran clicked');
     qs('#btnBocoran').classList.add('active');
     qs('#btnFeeling').classList.remove('active');
     setTimeout(() => showPage('page-education'), 300);
@@ -1295,20 +1297,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Education -> Back to Input Feeling
   qs('#btnEduNext').onclick = () => {
+    console.log('Education next');
     qs('#feelingInput').value = '';
     showPage('page-input');
   };
 
   // SKIP HISTORY (tetap sama)
   qs('#btnSkipHistory').onclick = () => {
+    console.log('Skip history clicked');
     userData.history = [];
+    console.log('Generating BBFS...');
     generateBBFSAndResults();
   };
 
   // History Input -> Generate (tetap sama)
   qs('#btnHistoryNext').onclick = () => {
+    console.log('History next clicked');
     const history = [...qsa('.history')].map(i => i.value.trim());
     const filledHistory = history.filter(h => h.length > 0);
+    
+    console.log('Filled history:', filledHistory);
     
     if (filledHistory.length > 0) {
       if (filledHistory.some(h => h.length !== 4 || !onlyDigits(h))) {
@@ -1329,6 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     userData.history = filledHistory;
+    console.log('Generating BBFS with history...');
     generateBBFSAndResults();
   };
 
@@ -1340,12 +1349,16 @@ document.addEventListener('DOMContentLoaded', () => {
      BBFS GENERATION - FIXED (SHUFFLED LADDER)
   ====================== */
   function generateBBFS7D(feeling) {
+    console.log('Generating BBFS from feeling:', feeling);
+    
     let digits = feeling.split('');
+    console.log('Initial digits:', digits);
     
     // Add 3 random digits
     for(let i = 0; i < 3; i++) {
       digits.push(randDigit());
     }
+    console.log('After adding random:', digits);
     
     // Validate: no digit appears 3x
     let valid = false;
@@ -1357,9 +1370,12 @@ document.addEventListener('DOMContentLoaded', () => {
         digitCount[d] = (digitCount[d] || 0) + 1;
       });
       
+      console.log('Digit count:', digitCount);
+      
       const hasTriple = Object.values(digitCount).some(count => count >= 3);
       
       if(hasTriple) {
+        console.log('Has triple, regenerating...');
         digits[4 + (attempts % 3)] = randDigit();
         attempts++;
       } else {
@@ -1367,10 +1383,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    return shuffle(digits).join('');
+    const result = shuffle(digits).join('');
+    console.log('Final BBFS 7D:', result);
+    return result;
   }
 
   function generateBBFSLadder(bbfs7d) {
+    console.log('Generating shuffled ladder from:', bbfs7d);
     const digits = bbfs7d.split('');
     
     // BBFS 6D - shuffled (not sequential)
@@ -1389,10 +1408,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!bbfs5d.includes(num)) bbfs5d.push(num);
     }
     
+    console.log('BBFS 6D (shuffled):', bbfs6d);
+    console.log('BBFS 5D (shuffled):', bbfs5d);
+    
     return { bbfs6d, bbfs5d };
   }
 
   function generateResults(bbfs) {
+    console.log('Generating results from BBFS:', bbfs);
     const d = bbfs.split('');
 
     // 4D SET - 8 results
@@ -1443,39 +1466,46 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    return {
-      set4d,
-      set3d,
-      set2d,
-      cb1d,
-      cb2d,
-      cb3d
-    };
+    const results = { set4d, set3d, set2d, cb1d, cb2d, cb3d };
+    console.log('Generated results:', results);
+    return results;
   }
 
   function generateBBFSAndResults() {
-    // 1. Generate BBFS 7D
-    userData.bbfs = generateBBFS7D(userData.feeling);
+    console.log('=== START GENERATION ===');
+    console.log('User data:', userData);
     
-    // 2. Generate shuffled ladder
-    userData.ladder = generateBBFSLadder(userData.bbfs);
-    
-    // 3. Generate results (4D/3D/2D/Colok)
-    userData.results = generateResults(userData.bbfs);
-    
-    // 4. Run processing
-    runProcessing();
+    try {
+      // 1. Generate BBFS 7D
+      userData.bbfs = generateBBFS7D(userData.feeling);
+      
+      // 2. Generate shuffled ladder
+      userData.ladder = generateBBFSLadder(userData.bbfs);
+      
+      // 3. Generate results
+      userData.results = generateResults(userData.bbfs);
+      
+      console.log('Generation successful!');
+      console.log('Final userData:', userData);
+      
+      // 4. Run processing
+      runProcessing();
+      
+    } catch (error) {
+      console.error('ERROR in generateBBFSAndResults:', error);
+      alert('Terjadi error: ' + error.message);
+    }
   }
 
   /* =====================
      PROCESSING ANIMATION - SIMPLIFIED
   ====================== */
   function runProcessing() {
+    console.log('Running processing...');
     showPage('page-processing');
     
     const fill = qs('#progressFill');
     const text = qs('#progressText');
-    const log = qs('#processLog');
     
     let progress = 0;
     const steps = [
@@ -1495,17 +1525,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (step < steps.length) {
         text.textContent = steps[step];
-        // Add log entry
-        const logLine = document.createElement('div');
-        logLine.textContent = steps[step];
-        log.appendChild(logLine);
-        log.scrollTop = log.scrollHeight;
         step++;
       }
       
       if (progress === 100) {
         clearInterval(interval);
         setTimeout(() => {
+          console.log('Processing complete, showing result...');
           renderResult();
           showPage('page-result');
         }, 800);
@@ -1517,6 +1543,8 @@ document.addEventListener('DOMContentLoaded', () => {
      RENDER RESULT - FOR NEW UI (BBFS VISIBLE FIRST)
   ====================== */
   function renderResult() {
+    console.log('Rendering result for new UI...');
+    
     // Update Hero Info
     const country = localStorage.getItem('selectedCountry') || 'Singapore'; // sesuaikan
     const today = new Date();
@@ -1747,6 +1775,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
 
 
