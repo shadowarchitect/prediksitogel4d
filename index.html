@@ -1433,15 +1433,29 @@ function renderResult() {
   /* =====================
      MAIN GENERATION FUNCTION
   ====================== */
-  function generateBBFSAndResults() {
-    // 1. Generate BBFS 7D
-    userData.bbfs = generateBBFS7D(userData.feeling);
-    
-    // 2. Generate BBFS Ladder
-    userData.ladder = generateBBFSLadder(userData.bbfs);
-    
-    // 3. Generate Results (4D/3D/2D/Colok) - UPDATED 8 RESULTS
-    userData.results = generateResults(userData.bbfs);
+  ffunction generateBBFSAndResults() {
+  console.log('=== START GENERATION ===');
+  console.log('User feeling:', userData.feeling);
+  
+  // 1. Generate BBFS 7D
+  userData.bbfs = generateBBFS7D(userData.feeling);
+  console.log('BBFS 7D:', userData.bbfs);
+  
+  // 2. Generate BBFS Ladder
+  userData.ladder = generateBBFSLadder(userData.bbfs);
+  console.log('BBFS 6D:', userData.ladder.bbfs6d);
+  console.log('BBFS 5D:', userData.ladder.bbfs5d);
+  
+  // 3. Generate Results (4D/3D/2D/Colok)
+  userData.results = generateResults(userData.bbfs);
+  console.log('RESULTS:', {
+    set4d: userData.results.set4d,
+    set3d: userData.results.set3d,
+    set2d: userData.results.set2d,
+    cb1d: userData.results.cb1d,
+    cb2d: userData.results.cb2d,
+    cb3d: userData.results.cb3d
+  });
     
     // 4. Run processing
 runProcessing();
@@ -1736,6 +1750,7 @@ qs('#btnMainSet').click();
 
 </body>
 </html>
+
 
 
 
