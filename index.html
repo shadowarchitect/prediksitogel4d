@@ -1284,6 +1284,63 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =====================
+   GENERATE RESULTS - 4D/3D/2D/COLOK
+====================== */
+function generateResults(bbfs) {
+  const d = bbfs.split('');
+  
+  // 4D SET - 8 results
+  const set4d = [];
+  while (set4d.length < 8) {
+    const n = shuffle(d).slice(0,4).join('');
+    if (!set4d.includes(n)) set4d.push(n);
+  }
+  
+  // 3D JAGA - 8 results
+  const set3d = [];
+  while (set3d.length < 8) {
+    const n = shuffle(d).slice(0,3).join('');
+    if (!set3d.includes(n)) set3d.push(n);
+  }
+  
+  // 2D JAGA - 10 results (5 pairs + mirror)
+  const main2d = [];
+  while (main2d.length < 5) {
+    const n = shuffle(d).slice(0,2).join('');
+    if (n.length === 2 && !main2d.includes(n)) main2d.push(n);
+  }
+  
+  const set2d = [];
+  main2d.forEach(n => {
+    if (n.length === 2) {
+      set2d.push(n);
+      set2d.push(n[1] + n[0]); // mirror
+    }
+  });
+  
+  // COLOK 1D - ambil 3 digit unik dari BBFS
+  const cb1d = [...new Set(d)].slice(0, 3);
+  
+  // COLOK 2D - kombinasi dari cb1d
+  const cb2d = [];
+  for (let i = 0; i < cb1d.length; i++) {
+    for (let j = i + 1; j < cb1d.length; j++) {
+      cb2d.push(cb1d[i] + cb1d[j]);
+    }
+  }
+  
+  // COLOK 3D - tambah digit ke cb2d
+  const cb3d = [];
+  cb2d.forEach((pair, idx) => {
+    if (pair.length === 2) {
+      cb3d.push(pair + d[idx % d.length]);
+    }
+  });
+  
+  return { set4d, set3d, set2d, cb1d, cb2d, cb3d };
+}
+
+  /* =====================
      RENDER RESULT PAGE - SINGLE VERSION (NO DUPLICATE)
   ====================== */
 function renderResult() {
@@ -1627,6 +1684,7 @@ function renderResult() {
 
 </body>
 </html>
+
 
 
 
