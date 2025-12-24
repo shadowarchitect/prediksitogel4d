@@ -1127,53 +1127,152 @@ select.clean-input {
  /* =====================
      SHARE FUNCTIONS (GLOBAL)
   ====================== */
+
+// Helper function untuk generate text hasil
+function generateShareText() {
+  if (!window.userData || !window.userData.bbfs) return null;
+  
+  // Get selected pasaran
+  const pasaranSelect = document.querySelector('select.clean-input');
+  const pasaran = pasaranSelect ? pasaranSelect.value : 'Singapore';
+  
+  // Format tanggal
+  const now = new Date();
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  const tanggal = now.toLocaleDateString('id-ID', options);
+  const hari = now.toLocaleDateString('id-ID', { weekday: 'long' });
+  
+  let text = `✨ PREDIKSI TOGEL HARI INI ✨\n`;
+  text += `${pasaran.toUpperCase()} / ${hari.toUpperCase()} - ${tanggal}\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+  
+  // BBFS Section
+  text += `🎯 BBFS LADDER\n`;
+  text += `├ 7D: ${window.userData.bbfs}\n`;
+  
+  if (window.userData.ladder?.bbfs6d) {
+    text += `├ 6D: ${window.userData.ladder.bbfs6d[0] || '-'}\n`;
+    text += `└ 6D: ${window.userData.ladder.bbfs6d[1] || '-'}\n`;
+  }
+  
+  text += `\n📊 BBFS 5D\n`;
+  if (window.userData.ladder?.bbfs5d) {
+    window.userData.ladder.bbfs5d.forEach((num, idx) => {
+      text += `${idx + 1}. ${num}\n`;
+    });
+  }
+  
+  text += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `🎲 HASIL PREDIKSI\n\n`;
+  
+  // 4D SET
+  text += `🔮 4D SET (${window.userData.results?.set4d?.length || 0} angka)\n`;
+  if (window.userData.results?.set4d) {
+    const set4d = window.userData.results.set4d;
+    for (let i = 0; i < Math.min(4, set4d.length); i++) {
+      text += `[${set4d[i]}] `;
+    }
+    text += `\n`;
+  }
+  
+  // 3D JAGA  
+  text += `\n🎯 3D JAGA\n`;
+  if (window.userData.results?.set3d) {
+    const set3d = window.userData.results.set3d;
+    for (let i = 0; i < Math.min(4, set3d.length); i++) {
+      text += `[${set3d[i]}] `;
+    }
+    text += `\n`;
+  }
+  
+  // 2D JAGA
+  text += `\n⭐ 2D JAGA\n`;
+  if (window.userData.results?.set2d) {
+    const set2d = window.userData.results.set2d;
+    for (let i = 0; i < Math.min(6, set2d.length); i++) {
+      text += `${set2d[i]} `;
+      if ((i + 1) % 3 === 0) text += `\n`;
+    }
+  }
+  
+  text += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `💡 Catatan:\n`;
+  text += `• Prediksi berdasarkan analisis AI\n`;
+  text += `• Gunakan dengan bijak\n`;
+  text += `• Hasil bisa berbeda dengan kenyataan\n\n`;
+  text += `🔗 ${window.location.href}\n`;
+  text += `#PrediksiTogel #Togel${pasaran.replace(/\s+/g, '')} #TogelHariIni`;
+  
+  return text;
+}
+
+// WhatsApp - pakai format khusus (dengan bold * *)
 function shareToWhatsApp() {
-  if (!window.userData || !window.userData.bbfs) {
+  const text = generateShareText();
+  if (!text) {
     alert('Data belum tersedia');
     return;
   }
-  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${window.userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  // Convert ke format WhatsApp (bold)
+  const waText = text
+    .replace(/\*\*(.*?)\*\*/g, '*$1*')
+    .replace(/✨ PREDIKSI TOGEL/g, '✨ *PREDIKSI TOGEL*')
+    .replace(/🎯 BBFS LADDER/g, '🎯 *BBFS LADDER*')
+    .replace(/📊 BBFS 5D/g, '📊 *BBFS 5D*')
+    .replace(/🎲 HASIL PREDIKSI/g, '🎲 *HASIL PREDIKSI*')
+    .replace(/🔮 4D SET/g, '🔮 *4D SET*')
+    .replace(/🎯 3D JAGA/g, '🎯 *3D JAGA*')
+    .replace(/⭐ 2D JAGA/g, '⭐ *2D JAGA*')
+    .replace(/💡 Catatan:/g, '💡 *Catatan:*');
+    
+  const url = `https://wa.me/?text=${encodeURIComponent(waText)}`;
   window.open(url, '_blank');
 }
 
+// Telegram - sama seperti WhatsApp
 function shareToTelegram() {
-  if (!window.userData || !window.userData.bbfs) {
+  const text = generateShareText();
+  if (!text) {
     alert('Data belum tersedia');
     return;
   }
-  const text = `🎯 PREDIKSI TOGEL HARI INI\n\nBBFS: ${window.userData.bbfs}\n\nGunakan prediksi dengan bijak!`;
   const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 }
 
+// Facebook
 function shareToFacebook() {
   const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
   window.open(url, '_blank', 'width=600,height=400');
 }
 
+// Twitter - text lebih pendek
 function shareToTwitter() {
   if (!window.userData || !window.userData.bbfs) {
     alert('Data belum tersedia');
     return;
   }
-  const text = `🎯 PREDIKSI TOGEL BBFS: ${window.userData.bbfs}`;
-  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+  
+  const pasaranSelect = document.querySelector('select.clean-input');
+  const pasaran = pasaranSelect ? pasaranSelect.value : 'Singapore';
+  
+  let text = `🎯 Prediksi Togel ${pasaran}\n`;
+  text += `BBFS: ${window.userData.bbfs}\n`;
+  text += `Cek hasil lengkapnya:\n`;
+  text += `${window.location.href}\n\n`;
+  text += `#PrediksiTogel #Togel${pasaran.replace(/\s+/g, '')} #TogelHariIni`;
+  
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank', 'width=600,height=400');
 }
 
+// Salin Hasil - pakai format lengkap
 function copyResults() {
-  if (!window.userData || !window.userData.bbfs || !window.userData.results) {
+  const text = generateShareText();
+  if (!text) {
     alert('Data belum tersedia');
     return;
   }
-  
-  let text = `🎯 PREDIKSI TOGEL HARI INI\n\n`;
-  text += `BBFS: ${window.userData.bbfs}\n\n`;
-  text += `4D SET: ${window.userData.results.set4d.join(' ')}\n`;
-  text += `3D JAGA: ${window.userData.results.set3d.join(' ')}\n`;
-  text += `2D JAGA: ${window.userData.results.set2d.join(' ')}\n\n`;
-  text += `Gunakan prediksi dengan bijak!`;
   
   navigator.clipboard.writeText(text).then(() => {
     alert('✅ Hasil prediksi berhasil disalin ke clipboard!');
@@ -1814,6 +1913,7 @@ qs('#btnMainSet').click();
 
 </body>
 </html>
+
 
 
 
